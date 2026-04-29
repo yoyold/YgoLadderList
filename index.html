@@ -184,6 +184,57 @@ dialog .field{margin-bottom:6px}
   box-shadow:0 0 6px var(--gold);animation:pulse 1.4s infinite}
 @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
 
+/* Command palette */
+#palette-dialog{max-width:520px;width:92%;margin-top:8vh}
+#palette-dialog .dlg-body{padding:0}
+#palette-input{
+  width:100%;background:transparent;border:0;border-bottom:1px solid var(--border);
+  border-radius:0;padding:14px 18px;font-size:14px;color:var(--text);
+  font-family:Inter,system-ui,sans-serif
+}
+#palette-input:focus{outline:0;box-shadow:none;border-bottom-color:var(--gold)}
+#palette-list{max-height:55vh;overflow-y:auto;padding:6px 0}
+.palette-section{padding:8px 18px 4px;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);font-family:Cinzel,serif}
+.palette-item{
+  display:flex;align-items:center;gap:12px;padding:9px 18px;cursor:pointer;
+  border-left:3px solid transparent;font-size:13px
+}
+.palette-item .ico{width:20px;color:var(--gold-2);text-align:center;flex:0 0 auto;font-size:14px}
+.palette-item .lbl{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.palette-item .lbl b{color:var(--gold-2);font-weight:600}
+.palette-item kbd{margin-left:auto}
+.palette-item.selected{background:rgba(217,179,74,.10);border-left-color:var(--gold)}
+.palette-item:hover{background:rgba(122,162,255,.06)}
+.palette-empty{padding:24px;text-align:center;color:var(--muted);font-size:13px}
+
+/* Keyboard chip */
+kbd{
+  display:inline-block;background:rgba(7,9,20,.7);border:1px solid var(--border-2);
+  border-bottom-width:2px;border-radius:3px;padding:2px 7px;font-size:11px;
+  font-family:Cinzel,serif;color:var(--text);min-width:20px;text-align:center;
+  line-height:1.3;letter-spacing:.04em
+}
+
+/* Help dialog */
+#help-dialog{max-width:480px}
+.kbd-grid{display:grid;grid-template-columns:auto 1fr;gap:10px 16px;align-items:center}
+.kbd-grid .keys{white-space:nowrap;text-align:right}
+.kbd-grid .keys kbd + kbd{margin-left:3px}
+.kbd-grid .keys span{margin:0 4px;color:var(--muted);font-size:11px}
+.kbd-grid .desc{color:var(--text);font-size:13px}
+
+/* Visual indicator while G-prefix is armed */
+.g-prefix-hint{
+  position:fixed;bottom:20px;left:20px;z-index:201;
+  background:linear-gradient(180deg,rgba(16,21,53,.97),rgba(13,18,40,.97));
+  border:1px solid var(--gold-3);border-radius:6px;
+  padding:8px 14px;font-family:Cinzel,serif;font-size:12px;
+  letter-spacing:.1em;color:var(--gold-2);
+  box-shadow:0 8px 30px rgba(0,0,0,.6);
+  animation:toast-in .15s ease-out
+}
+
 /* Toasts */
 #toast-container{position:fixed;bottom:20px;right:20px;z-index:200;
   display:flex;flex-direction:column-reverse;gap:8px;
@@ -366,10 +417,42 @@ dialog .field{margin-bottom:6px}
   </section>
 </main>
 
+<dialog id="palette-dialog">
+  <div class="dlg-body">
+    <input id="palette-input" type="text" placeholder="Befehl oder Deck suchen…" autocomplete="off" spellcheck="false">
+    <div id="palette-list"></div>
+  </div>
+</dialog>
+
+<dialog id="help-dialog">
+  <div class="dlg-body">
+    <h3>Tastenkürzel</h3>
+    <div class="kbd-grid">
+      <div class="keys"><kbd>Ctrl</kbd>+<kbd>Z</kbd></div><div class="desc">Letzte Aktion rückgängig</div>
+      <div class="keys"><kbd>Ctrl</kbd>+<kbd>K</kbd></div><div class="desc">Befehl- und Deck-Suche</div>
+      <div class="keys"><kbd>N</kbd></div><div class="desc">Neues Match-Ergebnis</div>
+      <div class="keys"><kbd>S</kbd></div><div class="desc">Zu GitHub speichern</div>
+      <div class="keys"><kbd>R</kbd></div><div class="desc">Von GitHub laden</div>
+      <div class="keys"><kbd>?</kbd></div><div class="desc">Diese Übersicht</div>
+      <div class="keys"><kbd>G</kbd><span>dann</span><kbd>T</kbd></div><div class="desc">Tabelle</div>
+      <div class="keys"><kbd>G</kbd><span>dann</span><kbd>E</kbd></div><div class="desc">Ergebnis eintragen</div>
+      <div class="keys"><kbd>G</kbd><span>dann</span><kbd>C</kbd></div><div class="desc">Crosstable</div>
+      <div class="keys"><kbd>G</kbd><span>dann</span><kbd>D</kbd></div><div class="desc">Decks verwalten</div>
+      <div class="keys"><kbd>Esc</kbd></div><div class="desc">Dialog schließen</div>
+    </div>
+    <p class="help" style="margin-top:14px">Tipp: Auf Mac funktioniert <kbd>Cmd</kbd> statt <kbd>Ctrl</kbd>. Shortcuts sind inaktiv, solange du in einem Eingabefeld tippst.</p>
+  </div>
+  <div class="dlg-actions">
+    <button class="btn ghost" onclick="document.getElementById('help-dialog').close()">Schließen</button>
+  </div>
+</dialog>
+
 <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
 
 <footer style="text-align:center;padding:18px;color:var(--muted);font-size:12px;border-top:1px solid var(--border);margin-top:20px">
   <a href="#" id="open-privacy" style="color:var(--gold-2);text-decoration:none">Datenschutz</a>
+  <span style="margin:0 8px">·</span>
+  <a href="#" id="open-help" style="color:var(--gold-2);text-decoration:none">Tastenkürzel <kbd style="font-size:10px;padding:1px 5px">?</kbd></a>
   <span style="margin:0 8px">·</span>
   <span>Alle Ressourcen werden vom selben Server geladen — kein Tracking, keine Cookies, keine Drittanbieter.</span>
 </footer>
@@ -483,6 +566,7 @@ function discardLocal(){
 
 /* ---------- Toasts & Undo ---------- */
 let activeUndoToast = null;
+let activeUndoCallback = null;
 
 function showToast(opts){
   const container = document.getElementById('toast-container');
@@ -528,7 +612,10 @@ function showToast(opts){
 function removeToast(el){
   if(!el || el.classList.contains('leaving')) return;
   el.classList.add('leaving');
-  if(el === activeUndoToast) activeUndoToast = null;
+  if(el === activeUndoToast){
+    activeUndoToast = null;
+    activeUndoCallback = null;
+  }
   setTimeout(() => el.remove(), 220);
 }
 
@@ -541,15 +628,20 @@ function mutate(label, fn){
   saveLocal();
   renderAll();
   if(activeUndoToast) removeToast(activeUndoToast);
+  activeUndoCallback = () => {
+    state = JSON.parse(snapshot);
+    saveLocal();
+    renderAll();
+    showToast({label: 'Wiederhergestellt', duration: 2200});
+  };
   activeUndoToast = showToast({
     html: label,
     action: 'Rückgängig',
     duration: 5000,
     onAction: () => {
-      state = JSON.parse(snapshot);
-      saveLocal();
-      renderAll();
-      showToast({label: 'Wiederhergestellt', duration: 2200});
+      const cb = activeUndoCallback;
+      activeUndoCallback = null;
+      if(cb) cb();
     }
   });
   return result;
@@ -630,13 +722,16 @@ async function resetLocal(){
 }
 
 /* ---------- Tabs ---------- */
-document.querySelectorAll('nav button').forEach(b=>{
-  b.addEventListener('click',()=>{
-    document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    document.getElementById(b.dataset.tab).classList.add('active');
+function switchTab(name){
+  document.querySelectorAll('nav button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.tab === name);
   });
+  document.querySelectorAll('.section').forEach(s=>{
+    s.classList.toggle('active', s.id === name);
+  });
+}
+document.querySelectorAll('nav button').forEach(b=>{
+  b.addEventListener('click',()=>switchTab(b.dataset.tab));
 });
 
 /* ---------- Standings ---------- */
@@ -1078,6 +1173,261 @@ function renderAll(){
 document.getElementById('open-privacy').addEventListener('click',e=>{
   e.preventDefault();
   document.getElementById('privacy-dialog').showModal();
+});
+document.getElementById('open-help').addEventListener('click',e=>{
+  e.preventDefault();
+  openHelp();
+});
+
+/* ---------- Command Palette ---------- */
+const paletteDlg = document.getElementById('palette-dialog');
+const paletteInput = document.getElementById('palette-input');
+const paletteList = document.getElementById('palette-list');
+let paletteItems = [];
+let paletteSelected = 0;
+
+function openPalette(){
+  paletteInput.value = '';
+  renderPalette('');
+  paletteDlg.showModal();
+  setTimeout(()=>paletteInput.focus(), 10);
+}
+
+function buildPaletteCommands(){
+  return [
+    {label:'Neues Match-Ergebnis', kbd:'N', ico:'⚔', kind:'cmd',
+      action:()=>{ switchTab('enter'); setTimeout(()=>document.getElementById('enter-winner').focus(),50); }},
+    {label:'Von GitHub laden', kbd:'R', ico:'⤓', kind:'cmd',
+      action:()=>pullFromGitHub({silent:false})},
+    {label:'Zu GitHub speichern', kbd:'S', ico:'⤒', kind:'cmd',
+      action:()=>pushToGitHub()},
+    {label:'xlsx exportieren', ico:'⇩', kind:'cmd', action:exportXlsx},
+    {label:'xlsx importieren', ico:'⇧', kind:'cmd',
+      action:()=>document.getElementById('file-input').click()},
+    {label:'Anmelden / Token verwalten', ico:'⚿', kind:'cmd',
+      action:()=>document.getElementById('btn-login').click()},
+    {label:'Tabelle anzeigen', ico:'☰', kind:'cmd', action:()=>switchTab('standings')},
+    {label:'Crosstable anzeigen', ico:'▦', kind:'cmd', action:()=>switchTab('cross')},
+    {label:'Decks verwalten', ico:'✚', kind:'cmd', action:()=>switchTab('manage')},
+    {label:'Tastenkürzel', kbd:'?', ico:'?', kind:'cmd', action:openHelp},
+  ];
+}
+
+function renderPalette(query){
+  const q = query.trim().toLowerCase();
+  const cmds = buildPaletteCommands();
+  const cmdMatches = q ? cmds.filter(c=>c.label.toLowerCase().includes(q)) : cmds;
+  const deckMatches = state.decks.map((d,i)=>({label:d, i, kind:'deck', ico:'◆',
+    action:()=>focusDeck(i)}))
+    .filter(d=>!q || d.label.toLowerCase().includes(q))
+    .sort((a,b)=>a.label.localeCompare(b.label));
+
+  paletteItems = [];
+  let html = '';
+  if(cmdMatches.length){
+    html += '<div class="palette-section">Befehle</div>';
+    for(const c of cmdMatches){
+      const idx = paletteItems.length;
+      paletteItems.push(c);
+      html += paletteItemHtml(c, idx, q);
+    }
+  }
+  if(deckMatches.length){
+    html += '<div class="palette-section">Decks ('+deckMatches.length+')</div>';
+    const limited = q ? deckMatches : deckMatches.slice(0, 12);
+    for(const d of limited){
+      const idx = paletteItems.length;
+      paletteItems.push(d);
+      html += paletteItemHtml(d, idx, q);
+    }
+    if(!q && deckMatches.length > 12){
+      html += '<div class="palette-empty" style="padding:6px 18px;text-align:left">…'+(deckMatches.length-12)+' weitere — zum Filtern tippen</div>';
+    }
+  }
+  if(paletteItems.length === 0){
+    html = '<div class="palette-empty">Keine Treffer für „'+escapeHtml(query)+'"</div>';
+  }
+  paletteList.innerHTML = html;
+  paletteSelected = 0;
+  highlightPaletteSelection();
+}
+
+function paletteItemHtml(it, idx, q){
+  const lbl = q ? highlightQuery(it.label, q) : escapeHtml(it.label);
+  const kbd = it.kbd ? '<kbd>'+escapeHtml(it.kbd)+'</kbd>' : '';
+  return '<div class="palette-item" data-idx="'+idx+'">'+
+    '<span class="ico">'+(it.ico||'')+'</span>'+
+    '<span class="lbl">'+lbl+'</span>'+kbd+'</div>';
+}
+
+function highlightQuery(text, q){
+  const lower = text.toLowerCase();
+  const i = lower.indexOf(q);
+  if(i < 0) return escapeHtml(text);
+  return escapeHtml(text.slice(0,i))+'<b>'+escapeHtml(text.slice(i,i+q.length))+'</b>'+escapeHtml(text.slice(i+q.length));
+}
+
+function highlightPaletteSelection(){
+  paletteList.querySelectorAll('.palette-item').forEach(el=>{
+    el.classList.toggle('selected', +el.dataset.idx === paletteSelected);
+  });
+  const sel = paletteList.querySelector('.palette-item.selected');
+  if(sel) sel.scrollIntoView({block:'nearest'});
+}
+
+function runPaletteItem(idx){
+  const it = paletteItems[idx];
+  if(!it) return;
+  paletteDlg.close();
+  setTimeout(()=>it.action(), 0);
+}
+
+paletteInput.addEventListener('input', ()=>renderPalette(paletteInput.value));
+paletteInput.addEventListener('keydown', e=>{
+  if(e.key==='ArrowDown'){
+    e.preventDefault();
+    paletteSelected = Math.min(paletteSelected+1, paletteItems.length-1);
+    highlightPaletteSelection();
+  } else if(e.key==='ArrowUp'){
+    e.preventDefault();
+    paletteSelected = Math.max(paletteSelected-1, 0);
+    highlightPaletteSelection();
+  } else if(e.key==='Enter'){
+    e.preventDefault();
+    runPaletteItem(paletteSelected);
+  } else if(e.key==='Tab'){
+    e.preventDefault();
+    paletteSelected = (paletteSelected + (e.shiftKey?-1:1) + paletteItems.length) % Math.max(paletteItems.length,1);
+    highlightPaletteSelection();
+  }
+});
+paletteList.addEventListener('click', e=>{
+  const item = e.target.closest('.palette-item');
+  if(item) runPaletteItem(+item.dataset.idx);
+});
+paletteList.addEventListener('mousemove', e=>{
+  const item = e.target.closest('.palette-item');
+  if(item){
+    paletteSelected = +item.dataset.idx;
+    highlightPaletteSelection();
+  }
+});
+
+function focusDeck(i){
+  switchTab('cross');
+  // Mobile: set dropdown
+  const sel = document.getElementById('cross-mobile-deck');
+  if(sel){ sel.value = i; renderCrossMobile(); }
+  // Desktop: scroll table to that row and pulse highlight
+  setTimeout(()=>{
+    const wrap = document.getElementById('cross-wrap');
+    if(!wrap) return;
+    const rows = wrap.querySelectorAll('tbody tr');
+    const row = rows[i];
+    if(row){
+      row.scrollIntoView({block:'center', behavior:'smooth'});
+      const th = row.querySelector('th');
+      if(th){
+        th.style.transition = 'background .3s';
+        const orig = th.style.background;
+        th.style.background = 'linear-gradient(90deg,rgba(217,179,74,.45),rgba(217,179,74,.15))';
+        setTimeout(()=>{ th.style.background = orig; }, 1200);
+      }
+    }
+  }, 80);
+}
+
+/* ---------- Help ---------- */
+function openHelp(){
+  document.getElementById('help-dialog').showModal();
+}
+
+/* ---------- Global keydown ---------- */
+let gPrefixActive = false;
+let gPrefixTimer = null;
+let gPrefixHintEl = null;
+function armGPrefix(){
+  gPrefixActive = true;
+  clearTimeout(gPrefixTimer);
+  if(!gPrefixHintEl){
+    gPrefixHintEl = document.createElement('div');
+    gPrefixHintEl.className = 'g-prefix-hint';
+    gPrefixHintEl.textContent = 'G + T·E·C·D';
+    document.body.appendChild(gPrefixHintEl);
+  }
+  gPrefixTimer = setTimeout(disarmGPrefix, 1500);
+}
+function disarmGPrefix(){
+  gPrefixActive = false;
+  clearTimeout(gPrefixTimer);
+  if(gPrefixHintEl){ gPrefixHintEl.remove(); gPrefixHintEl = null; }
+}
+
+function isTypingTarget(t){
+  if(!t) return false;
+  if(t.isContentEditable) return true;
+  const tag = (t.tagName||'').toLowerCase();
+  return tag==='input' || tag==='textarea' || tag==='select';
+}
+
+document.addEventListener('keydown', e=>{
+  // Cmd/Ctrl+Z — undo (works even in inputs except text fields where the browser's own undo is desired)
+  const mod = e.ctrlKey || e.metaKey;
+  if(mod && !e.shiftKey && !e.altKey && (e.key==='z' || e.key==='Z')){
+    // Don't intercept if user is editing text — let browser undo work
+    if(isTypingTarget(e.target)) return;
+    if(activeUndoCallback){
+      e.preventDefault();
+      const cb = activeUndoCallback;
+      activeUndoCallback = null;
+      if(activeUndoToast) removeToast(activeUndoToast);
+      cb();
+    }
+    return;
+  }
+  // Cmd/Ctrl+K — open palette
+  if(mod && !e.shiftKey && !e.altKey && (e.key==='k' || e.key==='K')){
+    e.preventDefault();
+    openPalette();
+    return;
+  }
+  // Skip remaining shortcuts when typing or with modifiers
+  if(isTypingTarget(e.target)) return;
+  if(e.altKey || e.ctrlKey || e.metaKey) return;
+
+  // G-prefix follow-up
+  if(gPrefixActive){
+    const k = e.key.toLowerCase();
+    disarmGPrefix();
+    if(k==='t'){ e.preventDefault(); switchTab('standings'); return; }
+    if(k==='e'){ e.preventDefault(); switchTab('enter'); return; }
+    if(k==='c'){ e.preventDefault(); switchTab('cross'); return; }
+    if(k==='d'){ e.preventDefault(); switchTab('manage'); return; }
+    return;
+  }
+
+  switch(e.key){
+    case '?':
+      e.preventDefault(); openHelp(); break;
+    case 'n': case 'N':
+      e.preventDefault();
+      switchTab('enter');
+      setTimeout(()=>document.getElementById('enter-winner').focus(), 50);
+      break;
+    case 's': case 'S':
+      e.preventDefault();
+      if(getToken()) pushToGitHub();
+      else showToast({label:'Nicht angemeldet — Token unter "Anmelden" einfügen.', duration:3000});
+      break;
+    case 'r': case 'R':
+      e.preventDefault();
+      pullFromGitHub({silent:false});
+      break;
+    case 'g': case 'G':
+      e.preventDefault();
+      armGPrefix();
+      break;
+  }
 });
 
 /* Contact reveal — assembled from char codes only at click time, never as
