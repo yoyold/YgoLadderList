@@ -184,6 +184,38 @@ dialog .field{margin-bottom:6px}
   box-shadow:0 0 6px var(--gold);animation:pulse 1.4s infinite}
 @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
 
+/* Toasts */
+#toast-container{position:fixed;bottom:20px;right:20px;z-index:200;
+  display:flex;flex-direction:column-reverse;gap:8px;
+  pointer-events:none;max-width:calc(100vw - 40px)}
+.toast{position:relative;overflow:hidden;
+  background:linear-gradient(180deg,rgba(16,21,53,.97),rgba(13,18,40,.97));
+  border:1px solid var(--gold-3);border-radius:6px;
+  padding:11px 14px;min-width:280px;max-width:380px;
+  box-shadow:0 8px 30px rgba(0,0,0,.6),0 0 0 1px rgba(217,179,74,.18) inset;
+  display:flex;align-items:center;justify-content:space-between;gap:14px;
+  pointer-events:auto;font-size:13px;color:var(--text);
+  animation:toast-in .2s ease-out}
+.toast.leaving{animation:toast-out .2s ease-in forwards}
+.toast .label{flex:1;min-width:0;line-height:1.3}
+.toast .label b{color:var(--gold-2);font-weight:600}
+.toast button.undo{
+  background:transparent;color:var(--gold-2);border:1px solid var(--gold-3);
+  padding:5px 12px;border-radius:4px;font-family:Cinzel,serif;font-size:11px;
+  text-transform:uppercase;letter-spacing:.08em;cursor:pointer;flex:0 0 auto;
+  font-weight:600}
+.toast button.undo:hover{background:rgba(217,179,74,.12)}
+.toast .progress{
+  position:absolute;bottom:0;left:0;height:2px;background:var(--gold);
+  width:100%;transform-origin:left;animation:toast-progress linear forwards}
+@keyframes toast-in{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes toast-out{to{transform:translateX(20px);opacity:0}}
+@keyframes toast-progress{to{transform:scaleX(0)}}
+@media (max-width:700px){
+  #toast-container{bottom:14px;right:14px;left:14px;max-width:none}
+  .toast{min-width:0;max-width:none;width:100%}
+}
+
 /* Mobile crosstable — list view per deck */
 .cross-mobile{display:none}
 .m-deck-header{
@@ -334,6 +366,8 @@ dialog .field{margin-bottom:6px}
   </section>
 </main>
 
+<div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
 <footer style="text-align:center;padding:18px;color:var(--muted);font-size:12px;border-top:1px solid var(--border);margin-top:20px">
   <a href="#" id="open-privacy" style="color:var(--gold-2);text-decoration:none">Datenschutz</a>
   <span style="margin:0 8px">·</span>
@@ -447,6 +481,81 @@ function discardLocal(){
   dirty = false;
 }
 
+/* ---------- Toasts & Undo ---------- */
+let activeUndoToast = null;
+
+function showToast(opts){
+  const container = document.getElementById('toast-container');
+  if(!container) return null;
+  const el = document.createElement('div');
+  el.className = 'toast';
+
+  const lab = document.createElement('div');
+  lab.className = 'label';
+  if(opts.html) lab.innerHTML = opts.html;
+  else lab.textContent = opts.label || '';
+  el.appendChild(lab);
+
+  const duration = opts.duration ?? 5000;
+
+  if(opts.action){
+    const btn = document.createElement('button');
+    btn.className = 'undo';
+    btn.type = 'button';
+    btn.textContent = opts.action;
+    btn.addEventListener('click', () => {
+      if(opts.onAction) opts.onAction();
+      removeToast(el);
+    });
+    el.appendChild(btn);
+  }
+
+  if(duration > 0){
+    const prog = document.createElement('div');
+    prog.className = 'progress';
+    prog.style.animationDuration = duration + 'ms';
+    el.appendChild(prog);
+  }
+
+  container.appendChild(el);
+
+  if(duration > 0){
+    setTimeout(() => removeToast(el), duration);
+  }
+  return el;
+}
+
+function removeToast(el){
+  if(!el || el.classList.contains('leaving')) return;
+  el.classList.add('leaving');
+  if(el === activeUndoToast) activeUndoToast = null;
+  setTimeout(() => el.remove(), 220);
+}
+
+/* Wraps a state mutation: takes a snapshot, runs the mutation,
+   then shows an undo toast that supersedes any earlier one. */
+function mutate(label, fn){
+  const snapshot = JSON.stringify(state);
+  const result = fn();
+  if(result === false) return false;  // mutation refused (validation)
+  saveLocal();
+  renderAll();
+  if(activeUndoToast) removeToast(activeUndoToast);
+  activeUndoToast = showToast({
+    html: label,
+    action: 'Rückgängig',
+    duration: 5000,
+    onAction: () => {
+      state = JSON.parse(snapshot);
+      saveLocal();
+      renderAll();
+      showToast({label: 'Wiederhergestellt', duration: 2200});
+    }
+  });
+  return result;
+}
+
+
 /* ---------- Stats ---------- */
 function stats(i){
   let w=0,l=0;
@@ -461,15 +570,20 @@ function stats(i){
 
 function setResult(i,j,value){
   if(i===j) return;
-  if(value===null){
-    state.matrix[i][j]=null;
-    state.matrix[j][i]=null;
-  } else {
-    state.matrix[i][j]=value;
-    state.matrix[j][i]=1-value;
-  }
-  saveLocal();
-  renderAll();
+  const dA = state.decks[i], dB = state.decks[j];
+  let label;
+  if(value===null) label = '<b>'+escapeHtml(dA)+'</b> vs <b>'+escapeHtml(dB)+'</b>: geleert';
+  else if(value===1) label = '<b>'+escapeHtml(dA)+'</b> schlägt <b>'+escapeHtml(dB)+'</b>';
+  else label = '<b>'+escapeHtml(dB)+'</b> schlägt <b>'+escapeHtml(dA)+'</b>';
+  mutate(label, () => {
+    if(value===null){
+      state.matrix[i][j]=null;
+      state.matrix[j][i]=null;
+    } else {
+      state.matrix[i][j]=value;
+      state.matrix[j][i]=1-value;
+    }
+  });
 }
 
 function addDeck(name){
@@ -478,12 +592,12 @@ function addDeck(name){
   if(state.decks.some(d=>d.toLowerCase()===name.toLowerCase())){
     alert('Deck existiert bereits'); return false;
   }
-  const N=state.decks.length;
-  state.decks.push(name);
-  for(const row of state.matrix) row.push(null);
-  state.matrix.push(new Array(N+1).fill(null));
-  saveLocal();
-  renderAll();
+  mutate('Deck <b>'+escapeHtml(name)+'</b> hinzugefügt', () => {
+    const N=state.decks.length;
+    state.decks.push(name);
+    for(const row of state.matrix) row.push(null);
+    state.matrix.push(new Array(N+1).fill(null));
+  });
   return true;
 }
 function renameDeck(i,name){
@@ -491,14 +605,19 @@ function renameDeck(i,name){
   if(state.decks.some((d,k)=>k!==i && d.toLowerCase()===name.toLowerCase())){
     alert('Name bereits vergeben'); return;
   }
-  state.decks[i]=name; saveLocal(); renderAll();
+  const old = state.decks[i];
+  if(old === name) return;
+  mutate('<b>'+escapeHtml(old)+'</b> &rarr; <b>'+escapeHtml(name)+'</b>', () => {
+    state.decks[i]=name;
+  });
 }
 function deleteDeck(i){
-  if(!confirm('Deck "'+state.decks[i]+'" wirklich löschen? Alle Ergebnisse damit gehen verloren.')) return;
-  state.decks.splice(i,1);
-  state.matrix.splice(i,1);
-  for(const row of state.matrix) row.splice(i,1);
-  saveLocal(); renderAll();
+  const name = state.decks[i];
+  mutate('Deck <b>'+escapeHtml(name)+'</b> gelöscht', () => {
+    state.decks.splice(i,1);
+    state.matrix.splice(i,1);
+    for(const row of state.matrix) row.splice(i,1);
+  });
 }
 
 async function resetLocal(){
