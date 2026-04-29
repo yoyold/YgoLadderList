@@ -1,0 +1,38 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary / backup files
+*.tmp
+*.bak
+*.log
+_*.html
+_*.json
+_*.txt
+
+# Local-only secrets (no secrets are needed by the app, but be safe)
+.env
+.env.local
+secrets.json
+
+# Node (if anyone adds tooling later)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Python (used during initial xlsx extraction — not needed in repo)
+__pycache__/
+*.pyc
+
+# OneDrive / Excel lock files
+~$*.xlsx
+*.xlsx#

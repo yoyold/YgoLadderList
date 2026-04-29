@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Duel Ladder</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+:root{
+  --bg-0:#070914;
+  --bg-1:#0d1228;
+  --bg-2:#141a3a;
+  --panel:#101535;
+  --panel-2:#161c43;
+  --border:#2a3170;
+  --border-2:#3d468f;
+  --gold:#d9b34a;
+  --gold-2:#f4d56b;
+  --gold-3:#8a6a1c;
+  --silver:#c9d2de;
+  --bronze:#cd7f32;
+  --text:#eef0fb;
+  --muted:#8c93b8;
+  --accent:#7aa2ff;
+  --win:#2bb874;
+  --win-2:#3fe09a;
+  --loss:#e0524d;
+  --loss-2:#ff7770;
+  --crimson:#7c1a1a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;color:var(--text);font:14px/1.5 Inter,system-ui,sans-serif;
+  background:var(--bg-0);
+  background-image:
+    radial-gradient(ellipse at 20% 0%, rgba(122,162,255,.12), transparent 55%),
+    radial-gradient(ellipse at 80% 100%, rgba(217,179,74,.10), transparent 55%),
+    radial-gradient(ellipse at 50% 50%, rgba(20,26,58,.6), transparent 70%);
+  background-attachment:fixed;
+  min-height:100vh;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.04;
+  background-image:repeating-linear-gradient(45deg,#fff 0 1px,transparent 1px 8px);
+}
+h1,h2,h3,.ygo-font{font-family:Cinzel,serif;letter-spacing:.04em}
+.ygo-title{font-family:Cinzel,serif;font-weight:800;letter-spacing:.18em;text-transform:uppercase;
+  background:linear-gradient(180deg,var(--gold-2) 0%, var(--gold) 50%, var(--gold-3) 100%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  text-shadow:0 0 20px rgba(217,179,74,.18)}
+header{display:flex;align-items:center;gap:14px;padding:12px 22px;
+  background:linear-gradient(180deg,#0a0e22 0%,#0d1330 100%);
+  border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;
+  box-shadow:0 0 0 1px rgba(217,179,74,.18) inset, 0 4px 20px rgba(0,0,0,.6)}
+header .logo{width:34px;height:34px;flex:0 0 auto;border-radius:50%;
+  background:radial-gradient(circle at 50% 50%,var(--gold-2) 0%,var(--gold) 35%,var(--gold-3) 70%,#3a2a08 100%);
+  box-shadow:0 0 16px rgba(217,179,74,.55), 0 0 0 2px #1a1430 inset;
+  position:relative}
+header .logo::after{content:'';position:absolute;inset:8px;border-radius:50%;
+  background:radial-gradient(circle,#1a1430 0%, #0a0e22 100%);
+  box-shadow:0 0 0 1px var(--gold-3) inset}
+header .logo::before{content:'';position:absolute;inset:13px;border-radius:50%;
+  background:var(--gold);box-shadow:0 0 8px var(--gold-2)}
+header h1{margin:0;font-size:18px}
+header .grow{flex:1}
+header .badge{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  padding:4px 10px;border:1px solid var(--border-2);border-radius:999px}
+header .badge.ok{color:var(--win-2);border-color:rgba(43,184,116,.4)}
+header .badge.warn{color:var(--gold-2);border-color:rgba(217,179,74,.5)}
+header .badge.err{color:var(--loss-2);border-color:rgba(224,82,77,.5)}
+nav{display:flex;gap:0;padding:0 22px;background:rgba(13,18,40,.8);
+  border-bottom:1px solid var(--border);position:sticky;top:59px;z-index:40;backdrop-filter:blur(8px)}
+nav button{background:transparent;color:var(--muted);border:0;padding:12px 18px;
+  cursor:pointer;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+  border-bottom:2px solid transparent;font-family:Cinzel,serif}
+nav button.active{color:var(--gold-2);border-bottom-color:var(--gold)}
+nav button:hover{color:var(--gold-2)}
+main{padding:22px;max-width:1400px;margin:0 auto}
+button.btn{background:linear-gradient(180deg,#2b3475 0%,#1a2057 100%);color:#fff;border:1px solid var(--border-2);
+  padding:7px 14px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;font-family:Cinzel,serif}
+button.btn:hover{background:linear-gradient(180deg,#3a4593 0%,#252e75 100%);border-color:var(--gold-3)}
+button.btn:disabled{opacity:.4;cursor:not-allowed}
+button.btn.gold{background:linear-gradient(180deg,var(--gold-2) 0%,var(--gold) 50%,var(--gold-3) 100%);
+  color:#1a1430;border-color:var(--gold-3);text-shadow:0 1px 0 rgba(255,255,255,.2)}
+button.btn.gold:hover{filter:brightness(1.1)}
+button.btn.ghost{background:transparent;border:1px solid var(--border-2);color:var(--text)}
+button.btn.ghost:hover{background:rgba(122,162,255,.08);border-color:var(--gold-3)}
+button.btn.danger{background:linear-gradient(180deg,#a93232 0%,#7c1a1a 100%);border-color:#5e0f0f}
+button.btn.danger:hover{filter:brightness(1.15)}
+input,select{background:rgba(7,9,20,.6);color:var(--text);border:1px solid var(--border-2);
+  padding:8px 11px;border-radius:4px;font-size:13px;font-family:Inter,system-ui,sans-serif}
+input:focus,select:focus{outline:0;border-color:var(--gold);box-shadow:0 0 0 2px rgba(217,179,74,.2)}
+.section{display:none}
+.section.active{display:block}
+
+/* Card frame — YGO style double border */
+.card{position:relative;border:1px solid var(--gold-3);background:
+  linear-gradient(180deg,rgba(16,21,53,.95) 0%, rgba(13,18,40,.95) 100%);
+  border-radius:6px;padding:18px;margin-bottom:18px;
+  box-shadow:0 0 0 1px rgba(217,179,74,.15) inset, 0 8px 30px rgba(0,0,0,.5)}
+.card::before{content:'';position:absolute;inset:3px;border:1px solid rgba(217,179,74,.2);border-radius:4px;pointer-events:none}
+.card h2{margin:0 0 14px 0;font-size:14px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gold-2);position:relative;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.card h2::after{content:'';position:absolute;left:0;bottom:-1px;width:50px;height:1px;background:var(--gold)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+
+/* Standings */
+table.standings{border-collapse:collapse;width:100%;font-size:13px}
+table.standings th,table.standings td{padding:9px 12px;text-align:left;border-bottom:1px solid rgba(42,49,112,.5)}
+table.standings th{font-weight:700;color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  font-family:Cinzel,serif;border-bottom:1px solid var(--border-2)}
+table.standings tbody tr{transition:background .12s}
+table.standings tbody tr:hover{background:rgba(122,162,255,.06)}
+table.standings .num{text-align:right;font-variant-numeric:tabular-nums}
+table.standings .deck{font-weight:600}
+table.standings .wr-bar{display:inline-block;width:70px;height:5px;background:rgba(42,49,112,.6);
+  border-radius:3px;overflow:hidden;vertical-align:middle;margin-right:8px;border:1px solid rgba(42,49,112,.8)}
+table.standings .wr-bar > span{display:block;height:100%;
+  background:linear-gradient(90deg,var(--gold-3),var(--gold))}
+table.standings .rank{width:48px;font-family:Cinzel,serif;font-weight:700;color:var(--muted)}
+table.standings tr.gold .rank{color:var(--gold-2);font-size:16px}
+table.standings tr.silver .rank{color:var(--silver);font-size:15px}
+table.standings tr.bronze .rank{color:var(--bronze);font-size:15px}
+table.standings tr.gold .deck{color:var(--gold-2)}
+table.standings tr.gold td{background:linear-gradient(90deg,rgba(217,179,74,.12),transparent 60%)}
+table.standings tr.silver td{background:linear-gradient(90deg,rgba(201,210,222,.08),transparent 60%)}
+table.standings tr.bronze td{background:linear-gradient(90deg,rgba(205,127,50,.10),transparent 60%)}
+.medal{display:inline-block;width:18px;height:18px;border-radius:50%;vertical-align:middle;margin-right:6px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.4) inset, 0 0 6px rgba(255,255,255,.15)}
+.medal.gold{background:radial-gradient(circle at 35% 30%,#fff5c2,var(--gold) 60%,var(--gold-3))}
+.medal.silver{background:radial-gradient(circle at 35% 30%,#fff,var(--silver) 60%,#7a8290)}
+.medal.bronze{background:radial-gradient(circle at 35% 30%,#fbd6a8,var(--bronze) 60%,#6e431c)}
+
+/* Crosstable */
+.cross-wrap{overflow:auto;max-height:calc(100vh - 240px);border:1px solid var(--gold-3);border-radius:4px;
+  background:var(--bg-1);box-shadow:0 0 0 1px rgba(217,179,74,.15) inset}
+table.cross{border-collapse:separate;border-spacing:0;font-size:11px}
+table.cross th,table.cross td{border-right:1px solid rgba(42,49,112,.5);
+  border-bottom:1px solid rgba(42,49,112,.5);
+  padding:0;height:30px;min-width:30px;max-width:30px;text-align:center;background:var(--bg-1)}
+table.cross thead th{position:sticky;top:0;background:linear-gradient(180deg,#181f4d,#10153a);z-index:5;
+  writing-mode:vertical-rl;transform:rotate(180deg);padding:6px 4px;
+  height:150px;font-weight:600;color:var(--muted);white-space:nowrap;font-size:11px;font-family:Cinzel,serif;
+  border-bottom:1px solid var(--gold-3)}
+table.cross thead th.corner{writing-mode:horizontal-tb;transform:none;left:0;z-index:10;min-width:220px;max-width:220px;
+  text-align:left;padding:10px 14px;color:var(--gold-2);letter-spacing:.1em;text-transform:uppercase;font-size:11px}
+table.cross tbody th{position:sticky;left:0;background:linear-gradient(90deg,#10153a,#161c43);z-index:4;
+  text-align:left;padding:5px 12px;font-weight:600;color:var(--text);min-width:220px;max-width:220px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;
+  border-right:1px solid var(--gold-3)}
+table.cross td{cursor:pointer;user-select:none;color:var(--text);transition:filter .1s}
+table.cross td.diag{background:#05070f;color:#3a4188;cursor:default}
+table.cross td.win{background:linear-gradient(180deg,rgba(63,224,154,.85),rgba(43,184,116,.85));color:#06150d;font-weight:800}
+table.cross td.loss{background:linear-gradient(180deg,rgba(255,119,112,.85),rgba(224,82,77,.85));color:#150505;font-weight:800}
+table.cross td.empty:hover{background:rgba(217,179,74,.10)}
+table.cross td.win:hover,table.cross td.loss:hover{filter:brightness(1.15)}
+table.cross tbody tr:hover th{background:linear-gradient(90deg,#1a214d,#222a5e)}
+
+/* Manage */
+.deck-list{display:grid;grid-template-columns:1fr auto auto auto;gap:8px 14px;align-items:center}
+.deck-list .name input{width:100%}
+.deck-list .stat{color:var(--muted);font-variant-numeric:tabular-nums;font-size:12px;font-family:Cinzel,serif}
+
+/* Dialogs */
+dialog{background:var(--panel);color:var(--text);border:1px solid var(--gold-3);border-radius:6px;padding:0;
+  max-width:460px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.7)}
+dialog::backdrop{background:rgba(5,7,15,.75);backdrop-filter:blur(4px)}
+dialog .dlg-body{padding:18px}
+dialog .dlg-actions{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;
+  background:rgba(7,9,20,.4)}
+dialog h3{margin:0 0 14px 0;font-size:14px;color:var(--gold-2);letter-spacing:.12em;text-transform:uppercase;
+  padding-bottom:10px;border-bottom:1px solid var(--border)}
+dialog label{display:block;margin:8px 0 4px 0;font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+dialog input{width:100%}
+dialog .field{margin-bottom:6px}
+.help{font-size:12px;color:var(--muted);line-height:1.6;margin-top:8px}
+.help a{color:var(--gold-2)}
+.help code{background:rgba(7,9,20,.6);padding:1px 5px;border-radius:3px;border:1px solid var(--border);font-size:11px}
+
+/* unsaved indicator */
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--gold);margin-right:6px;
+  box-shadow:0 0 6px var(--gold);animation:pulse 1.4s infinite}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+
+@media (max-width:700px){
+  header{padding:10px 14px;gap:8px}
+  header h1{font-size:14px}
+  nav{padding:0 8px;overflow-x:auto}
+  nav button{padding:10px 12px;font-size:11px}
+  main{padding:14px}
+  table.cross thead th{height:110px}
+  table.cross thead th.corner,table.cross tbody th{min-width:150px;max-width:150px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo" aria-hidden="true"></div>
+  <h1 class="ygo-title">Duel Ladder</h1>
+  <span class="badge" id="deck-count"></span>
+  <span class="grow"></span>
+  <span class="badge" id="sync-status">Lokal</span>
+  <span class="badge" id="auth-status">Schreibgeschützt</span>
+  <input type="file" id="file-input" accept=".xlsx" hidden>
+  <button class="btn ghost" id="btn-pull" title="Stand von GitHub laden">⤓ Sync</button>
+  <button class="btn gold" id="btn-push" title="Änderungen zu GitHub speichern" disabled>⤒ Speichern</button>
+  <button class="btn ghost" id="btn-login">Anmelden</button>
+  <button class="btn ghost" onclick="document.getElementById('file-input').click()" title="Aus xlsx importieren">xlsx</button>
+  <button class="btn ghost" onclick="exportXlsx()" title="Als xlsx exportieren">.xlsx ⇩</button>
+</header>
+<nav>
+  <button data-tab="standings" class="active">Tabelle</button>
+  <button data-tab="enter">Ergebnis</button>
+  <button data-tab="cross">Crosstable</button>
+  <button data-tab="manage">Decks</button>
+</nav>
+<main>
+  <section id="standings" class="section active">
+    <div class="card">
+      <h2>Rangliste</h2>
+      <div class="row" style="margin-bottom:12px">
+        <input id="standings-search" placeholder="Deck suchen…" style="min-width:220px">
+        <label class="muted small"><input type="checkbox" id="standings-played-only"> nur mit Spielen</label>
+      </div>
+      <table class="standings">
+        <thead><tr>
+          <th class="rank">#</th><th>Deck</th>
+          <th class="num">Wins</th><th class="num">Losses</th><th class="num">Spiele</th>
+          <th class="num">Winrate</th>
+        </tr></thead>
+        <tbody id="standings-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="enter" class="section">
+    <div class="card">
+      <h2>Match-Ergebnis</h2>
+      <div class="row">
+        <select id="enter-winner"></select>
+        <span class="muted ygo-font">schlägt</span>
+        <select id="enter-loser"></select>
+        <button class="btn gold" onclick="submitResult()">Speichern</button>
+      </div>
+      <p class="help">Vorhandene Werte werden überschrieben. Im Crosstable kannst du Zellen direkt anklicken.</p>
+    </div>
+    <div class="card">
+      <h2>Direktduell</h2>
+      <div id="h2h-result" class="muted">Wähle zwei Decks oben.</div>
+    </div>
+  </section>
+
+  <section id="cross" class="section">
+    <div class="card" style="padding:12px">
+      <h2 style="margin-bottom:10px">Crosstable</h2>
+      <p class="help" style="margin:0 0 10px 4px">Klick auf eine Zelle: leer → Sieg → Niederlage → leer. Zeile = Deck, Spalte = Gegner. Spiegelzelle wird automatisch gesetzt. Rechtsklick öffnet Dialog.</p>
+      <div class="cross-wrap" id="cross-wrap"></div>
+    </div>
+  </section>
+
+  <section id="manage" class="section">
+    <div class="card">
+      <h2>Neues Deck</h2>
+      <div class="row">
+        <input id="add-deck-name" placeholder="Deckname" style="min-width:240px">
+        <button class="btn gold" onclick="addDeckFromInput()">Hinzufügen</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Decks (<span id="manage-count"></span>)</h2>
+      <div id="manage-list" class="deck-list"></div>
+    </div>
+    <div class="card">
+      <h2>Lokal zurücksetzen</h2>
+      <p class="help">Verwirft alle nicht synchronisierten lokalen Änderungen und lädt den Stand vom GitHub-Repo neu.</p>
+      <button class="btn danger" onclick="resetLocal()">Lokal verwerfen</button>
+    </div>
+  </section>
+</main>
+
+<footer style="text-align:center;padding:18px;color:var(--muted);font-size:12px;border-top:1px solid var(--border);margin-top:20px">
+  <a href="#" id="open-privacy" style="color:var(--gold-2);text-decoration:none">Datenschutz</a>
+  <span style="margin:0 8px">·</span>
+  <span>Alle Ressourcen werden vom selben Server geladen — kein Tracking, keine Cookies, keine Drittanbieter.</span>
+</footer>
+
+<dialog id="privacy-dialog">
+  <div class="dlg-body">
+    <h3>Datenschutz</h3>
+    <p class="help"><b>Hosting:</b> Diese Seite läuft auf GitHub Pages (GitHub Inc.). Beim Aufruf werden technische Server-Logs (IP-Adresse, User-Agent, Zeitstempel) durch GitHub gespeichert. Details: <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub Privacy Statement</a>.</p>
+    <p class="help"><b>Drittanbieter:</b> Keine. Schriftarten (Cinzel, Inter — SIL Open Font License), die SheetJS-Bibliothek und alle Skripte werden lokal vom selben Server ausgeliefert. Keine Verbindungen zu Google Fonts, CDNs, Analytics oder Tracking-Diensten.</p>
+    <p class="help"><b>Cookies:</b> Keine. Die Seite verwendet ausschließlich <code>localStorage</code> deines Browsers, um deine Match-Eingaben offline zwischenzuspeichern und – falls du dich anmeldest – deine GitHub-Konfiguration plus Personal Access Token lokal abzulegen. Diese Daten verlassen dein Gerät nicht ohne deine Aktion.</p>
+    <p class="help"><b>GitHub-Sync:</b> Erst wenn du auf <em>Sync</em> oder <em>Speichern</em> klickst, wird eine Anfrage an <code>api.github.com</code> gesendet (Lese-/Schreibzugriff auf <code>data.json</code> im konfigurierten Repo). Dabei überträgt dein Browser deine IP an GitHub. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag/Funktionserbringung) bzw. lit. f (berechtigtes Interesse an Datenpersistenz).</p>
+    <p class="help"><b>Speicherdauer / Löschen:</b> Lokale Daten kannst du jederzeit über die Browser-Einstellungen oder den <em>Lokal verwerfen</em>-Button löschen. Der Token wird per <em>Abmelden</em>-Button entfernt.</p>
+    <p class="help"><b>Verantwortlich:</b> <span id="contact-area"><button class="btn ghost" id="reveal-contact" type="button" style="padding:4px 10px;font-size:11px">Kontakt anzeigen</button></span><noscript> Bitte über das GitHub-Profil des Repos kontaktieren.</noscript></p>
+  </div>
+  <div class="dlg-actions">
+    <button class="btn ghost" onclick="document.getElementById('privacy-dialog').close()">Schließen</button>
+  </div>
+</dialog>
+
+<dialog id="cell-dialog">
+  <div class="dlg-body">
+    <h3 id="cell-dlg-title"></h3>
+    <div class="row">
+      <button class="btn gold" id="cell-dlg-win">Sieg</button>
+      <button class="btn danger" id="cell-dlg-loss">Niederlage</button>
+      <button class="btn ghost" id="cell-dlg-clear">Leer</button>
+    </div>
+  </div>
+  <div class="dlg-actions">
+    <button class="btn ghost" onclick="document.getElementById('cell-dialog').close()">Abbrechen</button>
+  </div>
+</dialog>
+
+<dialog id="login-dialog">
+  <form method="dialog">
+    <div class="dlg-body">
+      <h3>GitHub-Anmeldung</h3>
+      <div class="field"><label>Owner (GitHub-User/Org)</label><input id="cfg-owner" placeholder="dein-username"></div>
+      <div class="field"><label>Repo</label><input id="cfg-repo" placeholder="YgoLadderList"></div>
+      <div class="field"><label>Branch</label><input id="cfg-branch" placeholder="main"></div>
+      <div class="field"><label>Datei-Pfad</label><input id="cfg-path" placeholder="data.json"></div>
+      <div class="field"><label>Personal Access Token (Contents: write)</label><input id="cfg-token" type="password" placeholder="ghp_…"></div>
+      <p class="help">
+        Erstelle einen Fine-grained Token unter
+        <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">github.com/settings/personal-access-tokens</a>
+        mit Zugriff <em>nur</em> auf dieses Repo, Berechtigung <code>Contents: Read and write</code>.
+        Der Token bleibt nur in deinem Browser.
+      </p>
+    </div>
+    <div class="dlg-actions">
+      <button class="btn ghost" id="logout-btn" type="button">Abmelden</button>
+      <button class="btn ghost" value="cancel">Abbrechen</button>
+      <button class="btn gold" id="save-config" type="button">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="assets/xlsx.full.min.js"></script>
+<script type="application/json" id="seed">{"decks":["Caius","HLP","Yugi","D.D.","Dragon","Axel Volcanic","Jesse Crystal","Crowler Antik","Cyber/Zane","Hero/Jaden","Aster Destiny","Alexis Cybergirl","Zombie","Blue Eyes","Slifer","Obilisk","Chaos","Monarchs","Earth","Dark World","Marko Ozean","Arcana Evil Mage","Magier","Slime Stings","Wheevil Insects","Jinzo","Warrior","Lichtverpfl","Nightshroud Red-eyes","Dino","Uria/Raviel","Spirit Charmers","Hamon/Schimm","Shaddoll","CounterFairy","Toon","Mai Valentine","Marik Ra","Odion","Joey","Ishizu","Bakura","Kaiba","Akiza / Black Rose","Crow Black-Wing","Yusei Stardust","Tea","The Chronicles","Tania Amazones","Camula Vampire","Titan Fiends","Jaden Neo Space","Supreme King","Amnael D.D.","Bastion H20","Adrian Wolkian","Kagemaru Sacred Beasts","Syrus Roids","Sartorius Arcana","Jim Fossil","Hassleberry Tyranno","Rafael Orichalcos","Yubel","Paradox Brothers","Schöpfer Mausoleum","Noah Kaiba","Seeker Exodia","Yugi God","Chazz Bew-Ojama","Chumley","Frogs","Gladiator","Samurai","Lumis & Umbra Mask","Siegfried"],"matrix":[[null,1,1,1,null,null,1,null,null,null,null,1,1,1,1,1,1,0,null,1,null,1,null,null,null,null,null,1,null,0,1,1,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,0,null,null,null,null,null,1,null,null,null,1,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,1,null,null,null,null,1,1,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,1,null,0,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,0,null,null,null,null,null,0,1,0,null,0,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,0,null,null,1,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,0,null,null,null,null,null,null,null,null,null,0,null,0,null,0,null,null,null,null,null,null,null,null,0,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,0,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,0,null,null,null,1,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,0,null,null,0,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,0,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,null,null,null,null,null,null,null,1,1,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,0,null,null,null,1,0,1,null,null,null,null,null,0,null,0,0,null,null,0,null,null,null,null,null,null,null,1,1,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,0,1,null,null,0,null,null,null,null,null,null,1,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,null,null,null,1,null,1,null,null,null,null,null,null,null,0,null,0,null,null,1,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,null,null,null,null,null,null,null,null,null,null,1,0,1,null,0,null,null,null,1,null,null,null,1,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,null,null,null,1,null,1,null,null,null,null,1,null,null,1,null,1,null,1,null,null,null,null,null,null,null,1,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[1,null,null,null,1,null,null,null,null,1,1,null,null,null,1,null,0,null,null,0,null,null,null,null,null,null,1,0,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,0,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,null,null,0,null,null,null,1,null,null,null,1,null,null,null,0,1,1,null,null,null,1,1,null,null,null,0,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,0,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,null,null,1,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,0,null,null,1,0,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,1,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,0,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,1,null,null,null,1,1,0,null,null,null,0,null,0,0,0,1,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,0,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[1,0,null,null,null,null,null,null,null,null,null,null,0,1,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,0,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,0,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,1,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],[null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]]}</script>
+<script>
+const STORAGE_KEY = 'ygo-ladder-v2';
+const CFG_KEY = 'ygo-ladder-cfg-v1';
+const TOKEN_KEY = 'ygo-ladder-token-v1';
+
+function loadCfg(){
+  try { return JSON.parse(localStorage.getItem(CFG_KEY)) || {}; } catch(e) { return {}; }
+}
+function saveCfg(c){ localStorage.setItem(CFG_KEY, JSON.stringify(c)); }
+function getToken(){ return localStorage.getItem(TOKEN_KEY) || ''; }
+function setToken(t){ if(t) localStorage.setItem(TOKEN_KEY, t); else localStorage.removeItem(TOKEN_KEY); }
+
+let cfg = loadCfg();
+
+/* Defaults: try to infer owner/repo from current GitHub Pages URL */
+(function inferCfg(){
+  if(cfg.owner && cfg.repo) return;
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+  if(m){
+    cfg.owner = cfg.owner || m[1];
+    const parts = location.pathname.split('/').filter(Boolean);
+    if(parts.length>0) cfg.repo = cfg.repo || parts[0];
+  }
+  cfg.branch = cfg.branch || 'main';
+  cfg.path = cfg.path || 'data.json';
+  saveCfg(cfg);
+})();
+
+function loadLocalState(){
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  } catch(e){}
+  return null;
+}
+function loadSeed(){ return JSON.parse(document.getElementById('seed').textContent); }
+
+let state = loadLocalState() || loadSeed();
+let remoteSha = null;       // SHA from GitHub of the version we synced from
+let dirty = !!loadLocalState();  // local has unsynced changes
+
+function saveLocal(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  dirty = true;
+  updateStatusUI();
+}
+
+function discardLocal(){
+  localStorage.removeItem(STORAGE_KEY);
+  dirty = false;
+}
+
+/* ---------- Stats ---------- */
+function stats(i){
+  let w=0,l=0;
+  const m=state.matrix[i];
+  for(let j=0;j<state.decks.length;j++){
+    if(i===j) continue;
+    if(m[j]===1) w++;
+    else if(m[j]===0) l++;
+  }
+  return {w,l,g:w+l,wr: w+l ? w/(w+l) : 0};
+}
+
+function setResult(i,j,value){
+  if(i===j) return;
+  if(value===null){
+    state.matrix[i][j]=null;
+    state.matrix[j][i]=null;
+  } else {
+    state.matrix[i][j]=value;
+    state.matrix[j][i]=1-value;
+  }
+  saveLocal();
+  renderAll();
+}
+
+function addDeck(name){
+  name=(name||'').trim();
+  if(!name) return false;
+  if(state.decks.some(d=>d.toLowerCase()===name.toLowerCase())){
+    alert('Deck existiert bereits'); return false;
+  }
+  const N=state.decks.length;
+  state.decks.push(name);
+  for(const row of state.matrix) row.push(null);
+  state.matrix.push(new Array(N+1).fill(null));
+  saveLocal();
+  renderAll();
+  return true;
+}
+function renameDeck(i,name){
+  name=(name||'').trim(); if(!name) return;
+  if(state.decks.some((d,k)=>k!==i && d.toLowerCase()===name.toLowerCase())){
+    alert('Name bereits vergeben'); return;
+  }
+  state.decks[i]=name; saveLocal(); renderAll();
+}
+function deleteDeck(i){
+  if(!confirm('Deck "'+state.decks[i]+'" wirklich löschen? Alle Ergebnisse damit gehen verloren.')) return;
+  state.decks.splice(i,1);
+  state.matrix.splice(i,1);
+  for(const row of state.matrix) row.splice(i,1);
+  saveLocal(); renderAll();
+}
+
+async function resetLocal(){
+  if(!confirm('Lokale Änderungen verwerfen und Stand von GitHub neu laden?')) return;
+  discardLocal();
+  await pullFromGitHub({silent:false}).catch(()=>{
+    state = loadSeed();
+    renderAll();
+  });
+}
+
+/* ---------- Tabs ---------- */
+document.querySelectorAll('nav button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.tab).classList.add('active');
+  });
+});
+
+/* ---------- Standings ---------- */
+function renderStandings(){
+  const search=(document.getElementById('standings-search').value||'').toLowerCase();
+  const playedOnly=document.getElementById('standings-played-only').checked;
+  const rows=state.decks.map((d,i)=>({name:d,i,...stats(i)}));
+  // sort by most wins, then WR desc, then fewer losses, then name
+  rows.sort((a,b)=> b.w-a.w || b.wr-a.wr || a.l-b.l || a.name.localeCompare(b.name));
+  const tbody=document.getElementById('standings-body');
+  let html='';
+  let rank=0;
+  // Determine medal positions among ranked rows (with games > 0)
+  const ranked = rows.filter(r=>!playedOnly||r.g>0).filter(r=>!search||r.name.toLowerCase().includes(search));
+  for(const r of ranked){
+    rank++;
+    const wrPct=(r.wr*100).toFixed(1);
+    let cls='';
+    let medal='';
+    if(rank===1 && r.g>0){ cls='gold'; medal='<span class="medal gold"></span>'; }
+    else if(rank===2 && r.g>0){ cls='silver'; medal='<span class="medal silver"></span>'; }
+    else if(rank===3 && r.g>0){ cls='bronze'; medal='<span class="medal bronze"></span>'; }
+    html+='<tr class="'+cls+'"><td class="rank">'+(medal||rank)+'</td>'+
+      '<td class="deck">'+escapeHtml(r.name)+'</td>'+
+      '<td class="num">'+r.w+'</td>'+
+      '<td class="num">'+r.l+'</td>'+
+      '<td class="num">'+r.g+'</td>'+
+      '<td class="num"><span class="wr-bar"><span style="width:'+wrPct+'%"></span></span>'+(r.g?wrPct+'%':'—')+'</td></tr>';
+  }
+  tbody.innerHTML=html || '<tr><td colspan="6" class="muted">Keine Decks gefunden</td></tr>';
+  document.getElementById('deck-count').textContent=state.decks.length+' Decks';
+}
+document.getElementById('standings-search').addEventListener('input',renderStandings);
+document.getElementById('standings-played-only').addEventListener('change',renderStandings);
+
+/* ---------- Enter ---------- */
+function fillSelect(sel,preserve){
+  const prev=preserve?sel.value:null;
+  sel.innerHTML='';
+  const opts=state.decks.map((d,i)=>({d,i})).sort((a,b)=>a.d.localeCompare(b.d));
+  for(const o of opts){
+    const opt=document.createElement('option');
+    opt.value=o.i; opt.textContent=o.d; sel.appendChild(opt);
+  }
+  if(prev!==null && state.decks[+prev]) sel.value=prev;
+}
+function renderEnter(){
+  const sw=document.getElementById('enter-winner');
+  const sl=document.getElementById('enter-loser');
+  const had=sw.value && sl.value;
+  fillSelect(sw,true); fillSelect(sl,true);
+  if(!had && state.decks.length>1){ sw.selectedIndex=0; sl.selectedIndex=1; }
+  renderH2H();
+}
+function submitResult(){
+  const w=parseInt(document.getElementById('enter-winner').value,10);
+  const l=parseInt(document.getElementById('enter-loser').value,10);
+  if(w===l){ alert('Sieger und Verlierer müssen unterschiedlich sein'); return; }
+  setResult(w,l,1);
+}
+function renderH2H(){
+  const wEl=document.getElementById('enter-winner');
+  const lEl=document.getElementById('enter-loser');
+  if(!wEl||!lEl) return;
+  const w=+wEl.value, l=+lEl.value;
+  const box=document.getElementById('h2h-result');
+  if(isNaN(w)||isNaN(l)||w===l){ box.innerHTML=''; return; }
+  const v=state.matrix[w][l];
+  let txt='';
+  if(v===1) txt='<b>'+escapeHtml(state.decks[w])+'</b> hat gegen <b>'+escapeHtml(state.decks[l])+'</b> gewonnen.';
+  else if(v===0) txt='<b>'+escapeHtml(state.decks[w])+'</b> hat gegen <b>'+escapeHtml(state.decks[l])+'</b> verloren.';
+  else txt='Noch kein Ergebnis zwischen <b>'+escapeHtml(state.decks[w])+'</b> und <b>'+escapeHtml(state.decks[l])+'</b>.';
+  box.innerHTML=txt;
+}
+document.addEventListener('change',e=>{
+  if(e.target.id==='enter-winner'||e.target.id==='enter-loser') renderH2H();
+});
+
+/* ---------- Crosstable ---------- */
+function renderCross(){
+  const wrap=document.getElementById('cross-wrap');
+  const N=state.decks.length;
+  let html='<table class="cross"><thead><tr><th class="corner">Deck \\ Gegner</th>';
+  for(let j=0;j<N;j++){
+    html+='<th title="'+escapeAttr(state.decks[j])+'">'+escapeHtml(state.decks[j])+'</th>';
+  }
+  html+='</tr></thead><tbody>';
+  for(let i=0;i<N;i++){
+    const s=stats(i);
+    html+='<tr><th title="'+escapeAttr(state.decks[i]+' · '+s.w+'-'+s.l)+'">'+escapeHtml(state.decks[i])+'</th>';
+    for(let j=0;j<N;j++){
+      if(i===j){ html+='<td class="diag">—</td>'; continue; }
+      const v=state.matrix[i][j];
+      const cls=v===1?'win':v===0?'loss':'empty';
+      const txt=v===1?'1':v===0?'0':'';
+      html+='<td class="'+cls+'" data-i="'+i+'" data-j="'+j+'" title="'+escapeAttr(state.decks[i]+' vs '+state.decks[j])+'">'+txt+'</td>';
+    }
+    html+='</tr>';
+  }
+  html+='</tbody></table>';
+  wrap.innerHTML=html;
+  wrap.querySelectorAll('td[data-i]').forEach(td=>{
+    td.addEventListener('click',()=>{
+      const i=+td.dataset.i, j=+td.dataset.j;
+      const v=state.matrix[i][j];
+      setResult(i,j, v===null?1:v===1?0:null);
+    });
+    td.addEventListener('contextmenu',e=>{
+      e.preventDefault();
+      openCellDialog(+td.dataset.i, +td.dataset.j);
+    });
+  });
+}
+function openCellDialog(i,j){
+  const dlg=document.getElementById('cell-dialog');
+  document.getElementById('cell-dlg-title').textContent=state.decks[i]+' vs '+state.decks[j];
+  document.getElementById('cell-dlg-win').onclick=()=>{ setResult(i,j,1); dlg.close(); };
+  document.getElementById('cell-dlg-loss').onclick=()=>{ setResult(i,j,0); dlg.close(); };
+  document.getElementById('cell-dlg-clear').onclick=()=>{ setResult(i,j,null); dlg.close(); };
+  dlg.showModal();
+}
+
+/* ---------- Manage ---------- */
+function renderManage(){
+  document.getElementById('manage-count').textContent=state.decks.length;
+  const list=document.getElementById('manage-list');
+  const items=state.decks.map((d,i)=>({d,i,...stats(i)})).sort((a,b)=>a.d.localeCompare(b.d));
+  let html='';
+  for(const it of items){
+    html+='<div class="name"><input data-rename="'+it.i+'" value="'+escapeAttr(it.d)+'"></div>'+
+      '<div class="stat">'+it.w+'-'+it.l+' ('+it.g+')</div>'+
+      '<div><button class="btn ghost" data-save="'+it.i+'">Umbenennen</button></div>'+
+      '<div><button class="btn danger" data-del="'+it.i+'">Löschen</button></div>';
+  }
+  list.innerHTML=html;
+  list.querySelectorAll('button[data-save]').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const i=+b.dataset.save;
+      const inp=list.querySelector('input[data-rename="'+i+'"]');
+      renameDeck(i,inp.value);
+    });
+  });
+  list.querySelectorAll('button[data-del]').forEach(b=>{
+    b.addEventListener('click',()=>deleteDeck(+b.dataset.del));
+  });
+}
+function addDeckFromInput(){
+  const inp=document.getElementById('add-deck-name');
+  if(addDeck(inp.value)) inp.value='';
+}
+document.getElementById('add-deck-name').addEventListener('keydown',e=>{
+  if(e.key==='Enter') addDeckFromInput();
+});
+
+/* ---------- Status UI ---------- */
+function updateStatusUI(){
+  const tok = getToken();
+  const auth = document.getElementById('auth-status');
+  const sync = document.getElementById('sync-status');
+  const push = document.getElementById('btn-push');
+  if(tok){ auth.textContent='Angemeldet'; auth.className='badge ok'; push.disabled=!dirty; }
+  else { auth.textContent='Schreibgeschützt'; auth.className='badge warn'; push.disabled=true; }
+  if(dirty){ sync.innerHTML='<span class="dot"></span>Ungespeichert'; sync.className='badge warn'; }
+  else if(remoteSha){ sync.textContent='Synchronisiert'; sync.className='badge ok'; }
+  else { sync.textContent='Lokal'; sync.className='badge'; }
+}
+
+/* ---------- xlsx import/export ---------- */
+document.getElementById('file-input').addEventListener('change',e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:'array'});
+      const sheet=wb.Sheets[wb.SheetNames[0]];
+      const aoa=XLSX.utils.sheet_to_json(sheet,{header:1,defval:null});
+      const header=aoa[0]||[];
+      let endTrim=0;
+      const tail=(header.slice(-3)||[]).map(x=>(x||'').toString().toLowerCase());
+      if(tail.includes('wins')||tail.includes('wr')||tail.includes('loses')||tail.includes('losses')) endTrim=3;
+      const colCount=header.length-1-endTrim;
+      const decks=[];
+      for(let i=0;i<colCount;i++){
+        const row=aoa[i+1]||[]; const v=row[0];
+        decks.push((v||header[i+1]||('Deck '+(i+1))).toString().trim());
+      }
+      const N=decks.length;
+      const matrix=[];
+      for(let i=0;i<N;i++){
+        const r=[]; const row=aoa[i+1]||[];
+        for(let j=0;j<N;j++){
+          const v=row[j+1];
+          if(v===0||v==='0') r.push(0);
+          else if(v===1||v==='1') r.push(1);
+          else r.push(null);
+        }
+        matrix.push(r);
+      }
+      for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+        if(matrix[i][j]==null && matrix[j][i]!=null) matrix[i][j]=1-matrix[j][i];
+        else if(matrix[j][i]==null && matrix[i][j]!=null) matrix[j][i]=1-matrix[i][j];
+      }
+      state={decks,matrix};
+      saveLocal(); renderAll();
+      alert('Import erfolgreich: '+N+' Decks geladen.');
+    } catch(err){ alert('Import fehlgeschlagen: '+err.message); }
+  };
+  reader.readAsArrayBuffer(f);
+  e.target.value='';
+});
+
+function exportXlsx(){
+  const N=state.decks.length;
+  const aoa=[[' ', ...state.decks, 'Wins','Loses','WR']];
+  for(let i=0;i<N;i++){
+    const row=[state.decks[i]];
+    for(let j=0;j<N;j++){
+      if(i===j) row.push('x');
+      else row.push(state.matrix[i][j]==null ? null : state.matrix[i][j]);
+    }
+    const s=stats(i);
+    row.push(s.w, s.l, s.g ? s.w/s.g : null);
+    aoa.push(row);
+  }
+  const ws=XLSX.utils.aoa_to_sheet(aoa);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Tabelle1');
+  const today=new Date().toISOString().slice(0,10);
+  XLSX.writeFile(wb,'ygotournaments_'+today+'.xlsx');
+}
+
+/* ---------- GitHub Sync ---------- */
+function ghHeaders(includeAuth){
+  const h={'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
+  if(includeAuth){
+    const tok=getToken();
+    if(tok) h['Authorization']='Bearer '+tok;
+  }
+  return h;
+}
+function b64encode(str){
+  return btoa(unescape(encodeURIComponent(str)));
+}
+function b64decode(str){
+  return decodeURIComponent(escape(atob(str.replace(/\s/g,''))));
+}
+
+async function pullFromGitHub({silent}={}){
+  if(!cfg.owner||!cfg.repo||!cfg.path){
+    if(!silent) alert('GitHub-Konfiguration fehlt — bitte Anmelden öffnen.');
+    return;
+  }
+  try {
+    const url='https://api.github.com/repos/'+cfg.owner+'/'+cfg.repo+'/contents/'+cfg.path+'?ref='+(cfg.branch||'main')+'&t='+Date.now();
+    const res=await fetch(url,{headers:ghHeaders(true)});
+    if(res.status===404){
+      if(!silent) alert('data.json noch nicht im Repo. Beim ersten Speichern wird sie angelegt.');
+      return;
+    }
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const meta=await res.json();
+    const txt=b64decode(meta.content);
+    const data=JSON.parse(txt);
+    state=data; remoteSha=meta.sha; discardLocal();
+    renderAll();
+    if(!silent) flashStatus('Geladen','ok');
+  } catch(err){
+    if(!silent) alert('Laden fehlgeschlagen: '+err.message);
+    throw err;
+  }
+}
+
+async function pushToGitHub(){
+  const tok=getToken();
+  if(!tok){ alert('Nicht angemeldet'); return; }
+  if(!cfg.owner||!cfg.repo||!cfg.path){ alert('GitHub-Konfiguration fehlt'); return; }
+  // re-fetch sha to avoid conflict
+  let sha=remoteSha;
+  try {
+    const probe=await fetch('https://api.github.com/repos/'+cfg.owner+'/'+cfg.repo+'/contents/'+cfg.path+'?ref='+(cfg.branch||'main')+'&t='+Date.now(),{headers:ghHeaders(true)});
+    if(probe.ok){
+      const m=await probe.json();
+      sha=m.sha;
+      // detect remote-newer-than-our-base conflict
+      if(remoteSha && sha!==remoteSha && !confirm('Auf GitHub liegt eine neuere Version vor. Mit lokalen Änderungen überschreiben?')) return;
+    } else if(probe.status!==404) {
+      throw new Error('Probe HTTP '+probe.status);
+    }
+  } catch(err){ alert('Konnte Stand nicht prüfen: '+err.message); return; }
+
+  const body={
+    message:'Update ladder '+new Date().toISOString().slice(0,16).replace('T',' '),
+    content:b64encode(JSON.stringify(state,null,2)),
+    branch:cfg.branch||'main'
+  };
+  if(sha) body.sha=sha;
+  try {
+    const res=await fetch('https://api.github.com/repos/'+cfg.owner+'/'+cfg.repo+'/contents/'+cfg.path,{
+      method:'PUT', headers:{...ghHeaders(true),'Content-Type':'application/json'}, body:JSON.stringify(body)
+    });
+    if(!res.ok){
+      const t=await res.text();
+      throw new Error('HTTP '+res.status+': '+t.slice(0,200));
+    }
+    const j=await res.json();
+    remoteSha=j.content.sha;
+    discardLocal();
+    flashStatus('Gespeichert','ok');
+    updateStatusUI();
+  } catch(err){ alert('Speichern fehlgeschlagen: '+err.message); }
+}
+
+let flashTimer=null;
+function flashStatus(text,kind){
+  const el=document.getElementById('sync-status');
+  el.textContent=text; el.className='badge '+(kind||'');
+  clearTimeout(flashTimer);
+  flashTimer=setTimeout(updateStatusUI,1600);
+}
+
+document.getElementById('btn-pull').addEventListener('click',()=>pullFromGitHub({silent:false}));
+document.getElementById('btn-push').addEventListener('click',pushToGitHub);
+
+/* ---------- Login ---------- */
+const loginDlg=document.getElementById('login-dialog');
+document.getElementById('btn-login').addEventListener('click',()=>{
+  document.getElementById('cfg-owner').value=cfg.owner||'';
+  document.getElementById('cfg-repo').value=cfg.repo||'';
+  document.getElementById('cfg-branch').value=cfg.branch||'main';
+  document.getElementById('cfg-path').value=cfg.path||'data.json';
+  document.getElementById('cfg-token').value=getToken();
+  loginDlg.showModal();
+});
+document.getElementById('save-config').addEventListener('click',()=>{
+  cfg={
+    owner:document.getElementById('cfg-owner').value.trim(),
+    repo:document.getElementById('cfg-repo').value.trim(),
+    branch:document.getElementById('cfg-branch').value.trim()||'main',
+    path:document.getElementById('cfg-path').value.trim()||'data.json'
+  };
+  saveCfg(cfg);
+  setToken(document.getElementById('cfg-token').value.trim());
+  loginDlg.close();
+  updateStatusUI();
+  pullFromGitHub({silent:true}).catch(()=>{});
+});
+document.getElementById('logout-btn').addEventListener('click',()=>{
+  setToken('');
+  loginDlg.close();
+  updateStatusUI();
+});
+
+/* ---------- Helpers ---------- */
+function escapeHtml(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);}
+function escapeAttr(s){return escapeHtml(s);}
+
+function renderAll(){
+  renderStandings();
+  renderEnter();
+  renderCross();
+  renderManage();
+  updateStatusUI();
+}
+
+document.getElementById('open-privacy').addEventListener('click',e=>{
+  e.preventDefault();
+  document.getElementById('privacy-dialog').showModal();
+});
+
+/* Contact reveal — assembled from char codes only at click time, never as
+   plain text in source. Resists static scrapers and naive regex bots. */
+(function(){
+  const btn=document.getElementById('reveal-contact');
+  if(!btn) return;
+  btn.addEventListener('click',()=>{
+    const C=String.fromCharCode;
+    const a=[76,117,107,97,115], b=[68,111,110,121];
+    const u=[108,117,107,97,115,46,100,111,110,121];
+    const d=[119,101,98,46,100,101];
+    const at=C(64), m=C(109,97,105,108,116,111,58);
+    const name=C.apply(null,a)+' '+C.apply(null,b);
+    const addr=C.apply(null,u)+at+C.apply(null,d);
+    const area=document.getElementById('contact-area');
+    area.textContent='';
+    area.appendChild(document.createTextNode(name+' — '));
+    const link=document.createElement('a');
+    link.href=m+addr;
+    link.textContent=addr;
+    link.style.color='var(--gold-2)';
+    link.rel='nofollow noopener';
+    area.appendChild(link);
+  },{once:true});
+})();
+
+renderAll();
+// On startup, try to pull from GitHub if no local edits
+if(!dirty && cfg.owner && cfg.repo){
+  pullFromGitHub({silent:true}).catch(()=>{});
+}
+</script>
+</body>
+</html>
