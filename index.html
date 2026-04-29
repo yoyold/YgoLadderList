@@ -184,14 +184,59 @@ dialog .field{margin-bottom:6px}
   box-shadow:0 0 6px var(--gold);animation:pulse 1.4s infinite}
 @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
 
+/* Mobile crosstable — list view per deck */
+.cross-mobile{display:none}
+.m-deck-header{
+  background:linear-gradient(180deg,#181f4d,#10153a);
+  border:1px solid var(--gold-3);border-radius:6px;
+  padding:14px 16px;margin-bottom:14px;
+  box-shadow:0 0 0 1px rgba(217,179,74,.18) inset
+}
+.m-deck-name{
+  font-family:Cinzel,serif;font-size:18px;font-weight:700;
+  color:var(--gold-2);letter-spacing:.06em;line-height:1.2
+}
+.m-deck-stats{
+  color:var(--muted);font-size:13px;margin-top:6px;
+  font-variant-numeric:tabular-nums;font-family:Cinzel,serif;letter-spacing:.05em
+}
+.m-deck-stats .sep{margin:0 8px;opacity:.5}
+.m-match-list{display:flex;flex-direction:column;gap:6px}
+.m-match{
+  width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;
+  background:var(--bg-1);border:1px solid var(--border-2);border-radius:4px;
+  padding:11px 14px;cursor:pointer;font:inherit;color:var(--text);text-align:left;
+  transition:background .12s,border-color .12s,transform .08s;
+  -webkit-tap-highlight-color:transparent;user-select:none
+}
+.m-match:active{transform:scale(.99)}
+.m-match.win{border-left:3px solid var(--win-2)}
+.m-match.loss{border-left:3px solid var(--loss-2)}
+.m-match.empty{border-left:3px solid transparent}
+.m-match-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.m-match-result{
+  font-weight:700;font-size:11px;padding:4px 10px;border-radius:999px;
+  letter-spacing:.08em;text-transform:uppercase;font-family:Cinzel,serif;flex:0 0 auto
+}
+.m-match.win .m-match-result{
+  background:linear-gradient(180deg,var(--win-2),var(--win));color:#06150d
+}
+.m-match.loss .m-match-result{
+  background:linear-gradient(180deg,var(--loss-2),var(--loss));color:#150505
+}
+.m-match.empty .m-match-result{
+  background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--border)
+}
+
 @media (max-width:700px){
   header{padding:10px 14px;gap:8px}
   header h1{font-size:14px}
+  header .badge{display:none}
   nav{padding:0 8px;overflow-x:auto}
   nav button{padding:10px 12px;font-size:11px}
   main{padding:14px}
-  table.cross thead th{height:110px}
-  table.cross thead th.corner,table.cross tbody th{min-width:150px;max-width:150px}
+  .cross-desktop{display:none}
+  .cross-mobile{display:block}
 }
 </style>
 </head>
@@ -253,10 +298,19 @@ dialog .field{margin-bottom:6px}
   </section>
 
   <section id="cross" class="section">
-    <div class="card" style="padding:12px">
+    <div class="card cross-desktop" style="padding:12px">
       <h2 style="margin-bottom:10px">Crosstable</h2>
       <p class="help" style="margin:0 0 10px 4px">Klick auf eine Zelle: leer → Sieg → Niederlage → leer. Zeile = Deck, Spalte = Gegner. Spiegelzelle wird automatisch gesetzt. Rechtsklick öffnet Dialog.</p>
       <div class="cross-wrap" id="cross-wrap"></div>
+    </div>
+    <div class="card cross-mobile">
+      <h2 style="margin-bottom:10px">Matchups</h2>
+      <div class="row" style="margin-bottom:12px;gap:8px">
+        <select id="cross-mobile-deck" style="flex:1;min-width:0"></select>
+      </div>
+      <input id="cross-mobile-search" placeholder="Gegner filtern…" style="width:100%;margin-bottom:10px">
+      <div id="cross-mobile-list"></div>
+      <p class="help" style="margin-top:14px">Tippen wechselt zwischen leer → Sieg → Niederlage → leer. Spiegelzelle wird automatisch gesetzt. Lange drücken öffnet den Dialog.</p>
     </div>
   </section>
 
@@ -820,10 +874,84 @@ document.getElementById('logout-btn').addEventListener('click',()=>{
 function escapeHtml(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);}
 function escapeAttr(s){return escapeHtml(s);}
 
+function renderCrossMobile(){
+  const sel=document.getElementById('cross-mobile-deck');
+  if(!sel) return;
+  const prev=sel.value;
+  sel.innerHTML='';
+  const opts=state.decks.map((d,i)=>({d,i})).sort((a,b)=>a.d.localeCompare(b.d));
+  for(const o of opts){
+    const opt=document.createElement('option');
+    opt.value=o.i; opt.textContent=o.d;
+    sel.appendChild(opt);
+  }
+  if(prev!=='' && state.decks[+prev]) sel.value=prev;
+  else if(state.decks.length>0) sel.selectedIndex=0;
+
+  const i=parseInt(sel.value,10);
+  const list=document.getElementById('cross-mobile-list');
+  if(isNaN(i)||!state.decks[i]){ list.innerHTML=''; return; }
+
+  const search=(document.getElementById('cross-mobile-search').value||'').toLowerCase();
+  const s=stats(i);
+  const wrTxt=s.g?(s.wr*100).toFixed(1)+'%':'—';
+  let html='<div class="m-deck-header">'+
+    '<div class="m-deck-name">'+escapeHtml(state.decks[i])+'</div>'+
+    '<div class="m-deck-stats">'+s.w+' Wins<span class="sep">·</span>'+s.l+' Losses<span class="sep">·</span>'+wrTxt+'</div>'+
+    '</div>';
+
+  const items=state.decks.map((d,j)=>({d,j,v:state.matrix[i][j]}))
+    .filter(x=>x.j!==i)
+    .filter(x=>!search || x.d.toLowerCase().includes(search))
+    .sort((a,b)=>{
+      // played first (win, then loss), then unplayed; alpha within each group
+      const rank=v=>v===1?0:v===0?1:2;
+      return rank(a.v)-rank(b.v) || a.d.localeCompare(b.d);
+    });
+
+  if(items.length===0){
+    html+='<p class="muted small" style="margin:10px 4px 0">Keine Treffer.</p>';
+  } else {
+    html+='<div class="m-match-list">';
+    for(const it of items){
+      const cls=it.v===1?'win':it.v===0?'loss':'empty';
+      const label=it.v===1?'Sieg':it.v===0?'Niederl.':'offen';
+      html+='<button type="button" class="m-match '+cls+'" data-i="'+i+'" data-j="'+it.j+'">'+
+        '<span class="m-match-name">'+escapeHtml(it.d)+'</span>'+
+        '<span class="m-match-result">'+label+'</span>'+
+        '</button>';
+    }
+    html+='</div>';
+  }
+  list.innerHTML=html;
+
+  list.querySelectorAll('.m-match').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const i=+btn.dataset.i, j=+btn.dataset.j;
+      const v=state.matrix[i][j];
+      setResult(i,j, v===null?1:v===1?0:null);
+    });
+    // long-press / context menu opens explicit dialog
+    let pressTimer=null;
+    btn.addEventListener('contextmenu',e=>{ e.preventDefault(); openCellDialog(+btn.dataset.i,+btn.dataset.j); });
+    btn.addEventListener('touchstart',e=>{
+      pressTimer=setTimeout(()=>{
+        pressTimer=null;
+        openCellDialog(+btn.dataset.i,+btn.dataset.j);
+      },550);
+    },{passive:true});
+    btn.addEventListener('touchend',()=>{ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } });
+    btn.addEventListener('touchmove',()=>{ if(pressTimer){ clearTimeout(pressTimer); pressTimer=null; } });
+  });
+}
+document.getElementById('cross-mobile-deck').addEventListener('change',renderCrossMobile);
+document.getElementById('cross-mobile-search').addEventListener('input',renderCrossMobile);
+
 function renderAll(){
   renderStandings();
   renderEnter();
   renderCross();
+  renderCrossMobile();
   renderManage();
   updateStatusUI();
 }
