@@ -60,13 +60,89 @@ header .logo::after{content:'';position:absolute;inset:8px;border-radius:50%;
   box-shadow:0 0 0 1px var(--gold-3) inset}
 header .logo::before{content:'';position:absolute;inset:13px;border-radius:50%;
   background:var(--gold);box-shadow:0 0 8px var(--gold-2)}
-header h1{margin:0;font-size:18px}
+header h1{margin:0;font-size:18px;line-height:1.1}
 header .grow{flex:1}
-header .badge{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
-  padding:4px 10px;border:1px solid var(--border-2);border-radius:999px}
-header .badge.ok{color:var(--win-2);border-color:rgba(43,184,116,.4)}
-header .badge.warn{color:var(--gold-2);border-color:rgba(217,179,74,.5)}
-header .badge.err{color:var(--loss-2);border-color:rgba(224,82,77,.5)}
+header .title-block{display:flex;flex-direction:column;gap:2px;min-width:0}
+header .subtitle{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+  font-family:Cinzel,serif;font-weight:500}
+
+/* Smart sync button + overflow menu */
+.sync-group{position:relative;display:flex;align-items:center;gap:0}
+.sync-btn{
+  display:flex;align-items:center;gap:8px;
+  background:linear-gradient(180deg,#2b3475 0%,#1a2057 100%);
+  color:#fff;border:1px solid var(--border-2);
+  padding:7px 14px;border-radius:4px 0 0 4px;cursor:pointer;
+  font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  font-family:Cinzel,serif;line-height:1.2;
+  transition:filter .15s, border-color .15s, background .15s;
+}
+.sync-btn .ico{font-size:13px;line-height:1;flex:0 0 auto}
+.sync-btn .lbl{flex:0 0 auto}
+.sync-btn:hover:not(:disabled){filter:brightness(1.15)}
+.sync-btn:disabled{cursor:wait;opacity:.7}
+.sync-btn.state-dirty{
+  background:linear-gradient(180deg,var(--gold-2) 0%,var(--gold) 50%,var(--gold-3) 100%);
+  color:#1a1430;border-color:var(--gold-3);
+  text-shadow:0 1px 0 rgba(255,255,255,.2);
+  box-shadow:0 0 14px rgba(217,179,74,.35)
+}
+.sync-btn.state-dirty .ico{position:relative}
+.sync-btn.state-dirty .ico::before{
+  content:'';position:absolute;top:-3px;right:-7px;width:7px;height:7px;border-radius:50%;
+  background:#fff;box-shadow:0 0 6px rgba(255,255,255,.8);
+  animation:pulse 1.4s infinite
+}
+.sync-btn.state-synced{
+  background:transparent;border-color:rgba(43,184,116,.45);color:var(--win-2)
+}
+.sync-btn.state-synced:hover{background:rgba(43,184,116,.08)}
+.sync-btn.state-loggedout{
+  background:transparent;border-color:var(--gold-3);color:var(--gold-2)
+}
+.sync-btn.state-loggedout:hover{background:rgba(217,179,74,.08)}
+.sync-btn.state-loading .ico{
+  animation:spin 1s linear infinite;display:inline-block
+}
+.sync-btn.state-error{
+  background:transparent;border-color:rgba(224,82,77,.5);color:var(--loss-2)
+}
+.sync-btn.state-error:hover{background:rgba(224,82,77,.08)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.menu-btn{
+  background:linear-gradient(180deg,#2b3475 0%,#1a2057 100%);
+  border:1px solid var(--border-2);border-left:0;border-radius:0 4px 4px 0;
+  padding:7px 10px;color:var(--text);cursor:pointer;font-size:12px;line-height:1.2;
+  font-family:Cinzel,serif
+}
+.menu-btn:hover{filter:brightness(1.2);border-color:var(--gold-3)}
+.menu-btn[aria-expanded="true"]{background:linear-gradient(180deg,#3a4593 0%,#252e75 100%)}
+
+.header-menu{
+  position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--panel);border:1px solid var(--gold-3);border-radius:6px;
+  min-width:280px;padding:6px;
+  box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 0 1px rgba(217,179,74,.18) inset;
+  z-index:60;display:none;animation:menu-in .12s ease-out
+}
+.header-menu.open{display:block}
+@keyframes menu-in{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.header-menu button{
+  display:flex;align-items:center;gap:12px;width:100%;
+  background:transparent;border:0;color:var(--text);
+  padding:8px 12px;font-size:13px;cursor:pointer;text-align:left;
+  border-radius:4px;font-family:Inter,system-ui,sans-serif
+}
+.header-menu button:hover{background:rgba(122,162,255,.08)}
+.header-menu button.danger{color:var(--loss-2)}
+.header-menu button.danger .ico{color:var(--loss-2)}
+.header-menu button:disabled{opacity:.4;cursor:not-allowed}
+.header-menu button:disabled:hover{background:transparent}
+.header-menu .ico{width:18px;text-align:center;color:var(--gold-2);flex:0 0 auto;font-size:14px}
+.header-menu .lbl{flex:1;min-width:0}
+.header-menu kbd{margin-left:auto;font-size:10px;opacity:.7}
+.header-menu hr{border:0;border-top:1px solid var(--border);margin:5px 4px}
 nav{display:flex;gap:0;padding:0 22px;background:rgba(13,18,40,.8);
   border-bottom:1px solid var(--border);position:sticky;top:59px;z-index:40;backdrop-filter:blur(8px)}
 nav button{background:transparent;color:var(--muted);border:0;padding:12px 18px;
@@ -314,7 +390,10 @@ kbd{
 @media (max-width:700px){
   header{padding:10px 14px;gap:8px}
   header h1{font-size:14px}
-  header .badge{display:none}
+  header .subtitle{font-size:9px;letter-spacing:.12em}
+  .sync-btn{padding:7px 10px;font-size:11px;letter-spacing:.05em;gap:6px}
+  .menu-btn{padding:7px 8px}
+  .header-menu{min-width:240px;right:0;max-width:calc(100vw - 28px)}
   nav{padding:0 8px;overflow-x:auto}
   nav button{padding:10px 12px;font-size:11px}
   main{padding:14px}
@@ -326,17 +405,30 @@ kbd{
 <body>
 <header>
   <div class="logo" aria-hidden="true"></div>
-  <h1 class="ygo-title">Duel Ladder</h1>
-  <span class="badge" id="deck-count"></span>
+  <div class="title-block">
+    <h1 class="ygo-title">Duel Ladder</h1>
+    <span class="subtitle" id="deck-count"></span>
+  </div>
   <span class="grow"></span>
-  <span class="badge" id="sync-status">Lokal</span>
-  <span class="badge" id="auth-status">Schreibgeschützt</span>
   <input type="file" id="file-input" accept=".xlsx" hidden>
-  <button class="btn ghost" id="btn-pull" title="Stand von GitHub laden">⤓ Sync</button>
-  <button class="btn gold" id="btn-push" title="Änderungen zu GitHub speichern" disabled>⤒ Speichern</button>
-  <button class="btn ghost" id="btn-login">Anmelden</button>
-  <button class="btn ghost" onclick="document.getElementById('file-input').click()" title="Aus xlsx importieren">xlsx</button>
-  <button class="btn ghost" onclick="exportXlsx()" title="Als xlsx exportieren">.xlsx ⇩</button>
+  <div class="sync-group">
+    <button class="sync-btn" id="sync-btn" type="button">
+      <span class="ico"></span><span class="lbl"></span>
+    </button>
+    <button class="menu-btn" id="menu-btn" type="button" aria-label="Weitere Aktionen" aria-haspopup="true" aria-expanded="false">▾</button>
+    <div class="header-menu" id="header-menu" role="menu">
+      <button type="button" data-act="pull" role="menuitem"><span class="ico">⤓</span><span class="lbl">Aus GitHub neu laden</span><kbd>R</kbd></button>
+      <button type="button" data-act="discard" role="menuitem" class="danger"><span class="ico">↺</span><span class="lbl">Lokale Änderungen verwerfen</span></button>
+      <hr>
+      <button type="button" data-act="login" role="menuitem"><span class="ico">⚿</span><span class="lbl" id="menu-login-label">Anmelden / Token verwalten</span></button>
+      <hr>
+      <button type="button" data-act="import" role="menuitem"><span class="ico">⇧</span><span class="lbl">Excel importieren</span></button>
+      <button type="button" data-act="export" role="menuitem"><span class="ico">⇩</span><span class="lbl">Excel exportieren</span></button>
+      <hr>
+      <button type="button" data-act="help" role="menuitem"><span class="ico">?</span><span class="lbl">Tastenkürzel</span><kbd>?</kbd></button>
+      <button type="button" data-act="privacy" role="menuitem"><span class="ico">🛡</span><span class="lbl">Datenschutz</span></button>
+    </div>
+  </div>
 </header>
 <nav>
   <button data-tab="standings" class="active">Tabelle</button>
@@ -887,16 +979,76 @@ document.getElementById('add-deck-name').addEventListener('keydown',e=>{
 });
 
 /* ---------- Status UI ---------- */
+let saving = false;
+let lastError = null;
+let lastSyncedAt = null;
+
+function getSyncState(){
+  if(saving) return 'loading';
+  if(lastError) return 'error';
+  if(!getToken()) return 'loggedout';
+  if(dirty) return 'dirty';
+  return 'synced';
+}
+
+function relativeTime(ts){
+  if(!ts) return '';
+  const s = Math.round((Date.now()-ts)/1000);
+  if(s<60) return 'gerade eben';
+  if(s<3600) return 'vor '+Math.round(s/60)+' Min';
+  if(s<86400) return 'vor '+Math.round(s/3600) +' Std';
+  return 'vor '+Math.round(s/86400)+' Tagen';
+}
+
 function updateStatusUI(){
-  const tok = getToken();
-  const auth = document.getElementById('auth-status');
-  const sync = document.getElementById('sync-status');
-  const push = document.getElementById('btn-push');
-  if(tok){ auth.textContent='Angemeldet'; auth.className='badge ok'; push.disabled=!dirty; }
-  else { auth.textContent='Schreibgeschützt'; auth.className='badge warn'; push.disabled=true; }
-  if(dirty){ sync.innerHTML='<span class="dot"></span>Ungespeichert'; sync.className='badge warn'; }
-  else if(remoteSha){ sync.textContent='Synchronisiert'; sync.className='badge ok'; }
-  else { sync.textContent='Lokal'; sync.className='badge'; }
+  const btn = document.getElementById('sync-btn');
+  if(!btn) return;
+  const state = getSyncState();
+  btn.className = 'sync-btn state-'+state;
+  let ico='', lbl='', tip='';
+  switch(state){
+    case 'loggedout':
+      ico='⚿'; lbl='Anmelden';
+      tip='Mit GitHub anmelden, um Änderungen zu speichern';
+      break;
+    case 'synced':
+      ico='✓'; lbl='Synchron';
+      tip='Stand mit GitHub abgeglichen'+(lastSyncedAt?' · '+relativeTime(lastSyncedAt):'')+' · Klick: neu laden';
+      break;
+    case 'dirty':
+      ico='⤒'; lbl='Speichern';
+      tip='Lokale Änderungen vorhanden — klicken um zu GitHub zu pushen';
+      break;
+    case 'loading':
+      ico='↻'; lbl='Speichert…';
+      tip='Synchronisation läuft';
+      break;
+    case 'error':
+      ico='!'; lbl='Fehler';
+      tip=lastError+' · Klick zum erneuten Versuch';
+      break;
+  }
+  btn.querySelector('.ico').textContent = ico;
+  btn.querySelector('.lbl').textContent = lbl;
+  btn.title = tip;
+  btn.disabled = (state==='loading');
+
+  // menu items: disable discard if no local changes
+  const discardBtn = document.querySelector('#header-menu button[data-act="discard"]');
+  if(discardBtn) discardBtn.disabled = !dirty;
+  const loginLabel = document.getElementById('menu-login-label');
+  if(loginLabel) loginLabel.textContent = getToken() ? 'Angemeldet · Token verwalten' : 'Anmelden / Token verwalten';
+}
+
+function handleSyncClick(){
+  const state = getSyncState();
+  if(state==='loggedout'){ openLoginDialog(); return; }
+  if(state==='synced'){ pullFromGitHub({silent:false}); return; }
+  if(state==='dirty'){ pushToGitHub(); return; }
+  if(state==='error'){
+    lastError = null;
+    if(dirty) pushToGitHub(); else pullFromGitHub({silent:false});
+  }
 }
 
 /* ---------- xlsx import/export ---------- */
@@ -981,14 +1133,16 @@ function b64decode(str){
 
 async function pullFromGitHub({silent}={}){
   if(!cfg.owner||!cfg.repo||!cfg.path){
-    if(!silent) alert('GitHub-Konfiguration fehlt — bitte Anmelden öffnen.');
+    if(!silent) showToast({label:'GitHub-Konfiguration fehlt — Menü → Anmelden öffnen.', duration:3500});
     return;
   }
+  saving = true; lastError = null; updateStatusUI();
   try {
     const url='https://api.github.com/repos/'+cfg.owner+'/'+cfg.repo+'/contents/'+cfg.path+'?ref='+(cfg.branch||'main')+'&t='+Date.now();
     const res=await fetch(url,{headers:ghHeaders(true)});
     if(res.status===404){
-      if(!silent) alert('data.json noch nicht im Repo. Beim ersten Speichern wird sie angelegt.');
+      saving=false; updateStatusUI();
+      if(!silent) showToast({label:'data.json noch nicht im Repo. Beim ersten Speichern wird sie angelegt.', duration:3500});
       return;
     }
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -996,18 +1150,25 @@ async function pullFromGitHub({silent}={}){
     const txt=b64decode(meta.content);
     const data=JSON.parse(txt);
     state=data; remoteSha=meta.sha; discardLocal();
+    lastSyncedAt = Date.now();
+    saving = false; updateStatusUI();
     renderAll();
-    if(!silent) flashStatus('Geladen','ok');
+    if(!silent) showToast({label:'Geladen ✓', duration:2000});
   } catch(err){
-    if(!silent) alert('Laden fehlgeschlagen: '+err.message);
+    saving = false; lastError = err.message; updateStatusUI();
+    if(!silent) showToast({label:'Laden fehlgeschlagen: '+err.message, duration:4000});
     throw err;
   }
 }
 
 async function pushToGitHub(){
   const tok=getToken();
-  if(!tok){ alert('Nicht angemeldet'); return; }
-  if(!cfg.owner||!cfg.repo||!cfg.path){ alert('GitHub-Konfiguration fehlt'); return; }
+  if(!tok){ openLoginDialog(); return; }
+  if(!cfg.owner||!cfg.repo||!cfg.path){
+    showToast({label:'GitHub-Konfiguration fehlt — Menü → Anmelden öffnen.', duration:3500});
+    return;
+  }
+  saving = true; lastError = null; updateStatusUI();
   // re-fetch sha to avoid conflict
   let sha=remoteSha;
   try {
@@ -1015,12 +1176,17 @@ async function pushToGitHub(){
     if(probe.ok){
       const m=await probe.json();
       sha=m.sha;
-      // detect remote-newer-than-our-base conflict
-      if(remoteSha && sha!==remoteSha && !confirm('Auf GitHub liegt eine neuere Version vor. Mit lokalen Änderungen überschreiben?')) return;
+      if(remoteSha && sha!==remoteSha && !confirm('Auf GitHub liegt eine neuere Version vor. Mit lokalen Änderungen überschreiben?')){
+        saving=false; updateStatusUI(); return;
+      }
     } else if(probe.status!==404) {
       throw new Error('Probe HTTP '+probe.status);
     }
-  } catch(err){ alert('Konnte Stand nicht prüfen: '+err.message); return; }
+  } catch(err){
+    saving=false; lastError=err.message; updateStatusUI();
+    showToast({label:'Konnte Stand nicht prüfen: '+err.message, duration:4000});
+    return;
+  }
 
   const body={
     message:'Update ladder '+new Date().toISOString().slice(0,16).replace('T',' '),
@@ -1039,32 +1205,25 @@ async function pushToGitHub(){
     const j=await res.json();
     remoteSha=j.content.sha;
     discardLocal();
-    flashStatus('Gespeichert','ok');
-    updateStatusUI();
-  } catch(err){ alert('Speichern fehlgeschlagen: '+err.message); }
+    lastSyncedAt = Date.now();
+    saving=false; updateStatusUI();
+    showToast({label:'Gespeichert ✓', duration:2000});
+  } catch(err){
+    saving=false; lastError=err.message; updateStatusUI();
+    showToast({label:'Speichern fehlgeschlagen: '+err.message, duration:4000});
+  }
 }
-
-let flashTimer=null;
-function flashStatus(text,kind){
-  const el=document.getElementById('sync-status');
-  el.textContent=text; el.className='badge '+(kind||'');
-  clearTimeout(flashTimer);
-  flashTimer=setTimeout(updateStatusUI,1600);
-}
-
-document.getElementById('btn-pull').addEventListener('click',()=>pullFromGitHub({silent:false}));
-document.getElementById('btn-push').addEventListener('click',pushToGitHub);
 
 /* ---------- Login ---------- */
 const loginDlg=document.getElementById('login-dialog');
-document.getElementById('btn-login').addEventListener('click',()=>{
+function openLoginDialog(){
   document.getElementById('cfg-owner').value=cfg.owner||'';
   document.getElementById('cfg-repo').value=cfg.repo||'';
   document.getElementById('cfg-branch').value=cfg.branch||'main';
   document.getElementById('cfg-path').value=cfg.path||'data.json';
   document.getElementById('cfg-token').value=getToken();
   loginDlg.showModal();
-});
+}
 document.getElementById('save-config').addEventListener('click',()=>{
   cfg={
     owner:document.getElementById('cfg-owner').value.trim(),
@@ -1082,6 +1241,42 @@ document.getElementById('logout-btn').addEventListener('click',()=>{
   setToken('');
   loginDlg.close();
   updateStatusUI();
+});
+
+/* ---------- Smart sync button + overflow menu ---------- */
+document.getElementById('sync-btn').addEventListener('click', handleSyncClick);
+
+const headerMenu = document.getElementById('header-menu');
+const menuBtn = document.getElementById('menu-btn');
+function setMenuOpen(open){
+  headerMenu.classList.toggle('open', open);
+  menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+menuBtn.addEventListener('click', e=>{
+  e.stopPropagation();
+  setMenuOpen(!headerMenu.classList.contains('open'));
+});
+document.addEventListener('click', e=>{
+  if(headerMenu.classList.contains('open') &&
+     !headerMenu.contains(e.target) && e.target !== menuBtn){
+    setMenuOpen(false);
+  }
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && headerMenu.classList.contains('open')) setMenuOpen(false);
+});
+headerMenu.addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-act]');
+  if(!btn || btn.disabled) return;
+  setMenuOpen(false);
+  const act = btn.dataset.act;
+  if(act==='pull') pullFromGitHub({silent:false});
+  else if(act==='discard') resetLocal();
+  else if(act==='login') openLoginDialog();
+  else if(act==='import') document.getElementById('file-input').click();
+  else if(act==='export') exportXlsx();
+  else if(act==='help') openHelp();
+  else if(act==='privacy') document.getElementById('privacy-dialog').showModal();
 });
 
 /* ---------- Helpers ---------- */
@@ -1205,7 +1400,7 @@ function buildPaletteCommands(){
     {label:'xlsx importieren', ico:'⇧', kind:'cmd',
       action:()=>document.getElementById('file-input').click()},
     {label:'Anmelden / Token verwalten', ico:'⚿', kind:'cmd',
-      action:()=>document.getElementById('btn-login').click()},
+      action:()=>openLoginDialog()},
     {label:'Tabelle anzeigen', ico:'☰', kind:'cmd', action:()=>switchTab('standings')},
     {label:'Crosstable anzeigen', ico:'▦', kind:'cmd', action:()=>switchTab('cross')},
     {label:'Decks verwalten', ico:'✚', kind:'cmd', action:()=>switchTab('manage')},
