@@ -432,6 +432,30 @@ kbd{
 .fab:active{transform:scale(.96)}
 body[data-active-tab="enter"] .fab{transform:translateY(140%) scale(.85);opacity:0;pointer-events:none}
 
+/* Dirty page indicator (subtle gold inner glow around the viewport) */
+body.is-dirty::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  box-shadow:inset 0 0 0 2px rgba(217,179,74,.4),inset 0 0 24px rgba(217,179,74,.10);
+  animation:dirty-glow 2.6s ease-in-out infinite
+}
+@keyframes dirty-glow{
+  0%,100%{box-shadow:inset 0 0 0 2px rgba(217,179,74,.30),inset 0 0 18px rgba(217,179,74,.06)}
+  50%{box-shadow:inset 0 0 0 2px rgba(217,179,74,.55),inset 0 0 30px rgba(217,179,74,.15)}
+}
+
+/* Sync-button sub-label (countdown / auto-save hint) */
+.sync-btn .lbl .sub{
+  display:block;font-size:9px;letter-spacing:.06em;font-weight:500;opacity:.85;
+  margin-top:1px;text-transform:none;line-height:1
+}
+
+/* Auto-save toggle in overflow menu — check mark on the right */
+.header-menu button .check-mark{
+  margin-left:auto;color:var(--gold-2);font-size:13px;opacity:0;
+  transition:opacity .15s
+}
+.header-menu button.checked .check-mark{opacity:1}
+
 /* Deck detail dialog */
 #deck-dialog{max-width:600px;width:95%}
 .deck-title-row{display:flex;align-items:center;gap:10px;padding-bottom:12px;
@@ -618,6 +642,7 @@ table.cross tbody th[data-row-i]{cursor:pointer}
       <button type="button" data-act="discard" role="menuitem" class="danger"><span class="ico">↺</span><span class="lbl">Lokale Änderungen verwerfen</span></button>
       <hr>
       <button type="button" data-act="login" role="menuitem"><span class="ico">⚿</span><span class="lbl" id="menu-login-label">Anmelden / Token verwalten</span></button>
+      <button type="button" data-act="toggle-autosave" role="menuitemcheckbox"><span class="ico">⏱</span><span class="lbl" id="menu-autosave-label">Auto-Speichern: An</span><span class="check-mark">✓</span></button>
       <hr>
       <button type="button" data-act="import" role="menuitem"><span class="ico">⇧</span><span class="lbl">Excel importieren</span></button>
       <button type="button" data-act="export" role="menuitem"><span class="ico">⇩</span><span class="lbl">Excel exportieren</span></button>
@@ -879,9 +904,60 @@ let state = loadLocalState() || loadSeed();
 let remoteSha = null;       // SHA from GitHub of the version we synced from
 let dirty = !!loadLocalState();  // local has unsynced changes
 
+/* ---------- Auto-save ---------- */
+const AUTOSAVE_KEY = 'ygo-autosave-v1';
+const AUTOSAVE_DELAY = 5000;
+let autoSaveEnabled = localStorage.getItem(AUTOSAVE_KEY) !== '0';  // default ON
+let autoSaveTimer = null;
+let autoSaveCountdownTimer = null;
+let autoSaveFiresAt = 0;
+let lastSyncedSnapshot = null;  // canonical (minified) JSON of last known synced state
+
+function currentSnapshot(){ return JSON.stringify(state); }
+
+function setAutoSave(on){
+  autoSaveEnabled = on;
+  localStorage.setItem(AUTOSAVE_KEY, on ? '1' : '0');
+  if(!on) clearAutoSaveTimer();
+  else if(dirty && getToken()) scheduleAutoSave();
+  updateStatusUI();
+}
+
+function clearAutoSaveTimer(){
+  if(autoSaveTimer){ clearTimeout(autoSaveTimer); autoSaveTimer = null; }
+  if(autoSaveCountdownTimer){ clearInterval(autoSaveCountdownTimer); autoSaveCountdownTimer = null; }
+  autoSaveFiresAt = 0;
+}
+
+function scheduleAutoSave(){
+  clearAutoSaveTimer();
+  if(!autoSaveEnabled || !getToken() || !dirty || saving) return;
+  autoSaveFiresAt = Date.now() + AUTOSAVE_DELAY;
+  autoSaveTimer = setTimeout(()=>{
+    autoSaveTimer = null;
+    autoSaveFiresAt = 0;
+    if(dirty && !saving && getToken() && currentSnapshot() !== lastSyncedSnapshot){
+      pushToGitHub({silent:true});
+    } else {
+      updateStatusUI();
+    }
+  }, AUTOSAVE_DELAY);
+  // refresh sync button label every second so countdown ticks
+  autoSaveCountdownTimer = setInterval(updateStatusUI, 1000);
+}
+
 function saveLocal(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  dirty = true;
+  const snap = currentSnapshot();
+  if(lastSyncedSnapshot !== null && snap === lastSyncedSnapshot){
+    // State matches last known synced version — treat as clean
+    localStorage.removeItem(STORAGE_KEY);
+    dirty = false;
+    clearAutoSaveTimer();
+  } else {
+    localStorage.setItem(STORAGE_KEY, snap);
+    dirty = true;
+    scheduleAutoSave();
+  }
   updateStatusUI();
 }
 
@@ -1719,10 +1795,10 @@ function relativeTime(ts){
 function updateStatusUI(){
   const btn = document.getElementById('sync-btn');
   if(!btn) return;
-  const state = getSyncState();
-  btn.className = 'sync-btn state-'+state;
-  let ico='', lbl='', tip='';
-  switch(state){
+  const st = getSyncState();
+  btn.className = 'sync-btn state-'+st;
+  let ico='', lbl='', sub='', tip='';
+  switch(st){
     case 'loggedout':
       ico='⚿'; lbl='Anmelden';
       tip='Mit GitHub anmelden, um Änderungen zu speichern';
@@ -1733,7 +1809,16 @@ function updateStatusUI(){
       break;
     case 'dirty':
       ico='⤒'; lbl='Speichern';
-      tip='Lokale Änderungen vorhanden — klicken um zu GitHub zu pushen';
+      if(autoSaveTimer && autoSaveFiresAt){
+        const secs = Math.max(1, Math.ceil((autoSaveFiresAt - Date.now())/1000));
+        sub = 'Auto in '+secs+'s';
+        tip='Auto-Speichern in '+secs+' Sek. · Klick: jetzt speichern';
+      } else if(autoSaveEnabled && getToken()){
+        sub = 'Auto-Speichern an';
+        tip='Lokale Änderungen — auto-speichert beim nächsten Edit-Pause · Klick: jetzt speichern';
+      } else {
+        tip='Lokale Änderungen vorhanden — klicken um zu GitHub zu pushen';
+      }
       break;
     case 'loading':
       ico='↻'; lbl='Speichert…';
@@ -1745,15 +1830,24 @@ function updateStatusUI(){
       break;
   }
   btn.querySelector('.ico').textContent = ico;
-  btn.querySelector('.lbl').textContent = lbl;
+  let labelHtml = escapeHtml(lbl);
+  if(sub) labelHtml += '<span class="sub">'+escapeHtml(sub)+'</span>';
+  btn.querySelector('.lbl').innerHTML = labelHtml;
   btn.title = tip;
-  btn.disabled = (state==='loading');
+  btn.disabled = (st==='loading');
 
-  // menu items: disable discard if no local changes
+  // body dirty class for the page glow
+  document.body.classList.toggle('is-dirty', dirty);
+
+  // menu items
   const discardBtn = document.querySelector('#header-menu button[data-act="discard"]');
   if(discardBtn) discardBtn.disabled = !dirty;
   const loginLabel = document.getElementById('menu-login-label');
   if(loginLabel) loginLabel.textContent = getToken() ? 'Angemeldet · Token verwalten' : 'Anmelden / Token verwalten';
+  const autoLabel = document.getElementById('menu-autosave-label');
+  if(autoLabel) autoLabel.textContent = 'Auto-Speichern: '+(autoSaveEnabled ? 'An' : 'Aus');
+  const autoBtn = document.querySelector('#header-menu button[data-act="toggle-autosave"]');
+  if(autoBtn) autoBtn.classList.toggle('checked', autoSaveEnabled);
 }
 
 function handleSyncClick(){
@@ -1866,7 +1960,9 @@ async function pullFromGitHub({silent}={}){
     const txt=b64decode(meta.content);
     const data=JSON.parse(txt);
     state=data; remoteSha=meta.sha; discardLocal();
+    lastSyncedSnapshot = currentSnapshot();
     lastSyncedAt = Date.now();
+    clearAutoSaveTimer();
     saving = false; updateStatusUI();
     renderAll();
     if(!silent) showToast({label:'Geladen ✓', duration:2000});
@@ -1877,13 +1973,23 @@ async function pullFromGitHub({silent}={}){
   }
 }
 
-async function pushToGitHub(){
+async function pushToGitHub({silent}={}){
   const tok=getToken();
-  if(!tok){ openLoginDialog(); return; }
+  if(!tok){ if(!silent) openLoginDialog(); return; }
   if(!cfg.owner||!cfg.repo||!cfg.path){
-    showToast({label:'GitHub-Konfiguration fehlt — Menü → Anmelden öffnen.', duration:3500});
+    if(!silent) showToast({label:'GitHub-Konfiguration fehlt — Menü → Anmelden öffnen.', duration:3500});
     return;
   }
+  // No-op guard: nothing to push if state matches last known synced version
+  const snap = currentSnapshot();
+  if(lastSyncedSnapshot !== null && snap === lastSyncedSnapshot){
+    if(dirty){ dirty = false; discardLocal(); }
+    clearAutoSaveTimer();
+    updateStatusUI();
+    if(!silent) showToast({label:'Schon synchron — nichts zu speichern', duration:2000});
+    return;
+  }
+  clearAutoSaveTimer();
   saving = true; lastError = null; updateStatusUI();
   // re-fetch sha to avoid conflict
   let sha=remoteSha;
@@ -1892,21 +1998,31 @@ async function pushToGitHub(){
     if(probe.ok){
       const m=await probe.json();
       sha=m.sha;
-      if(remoteSha && sha!==remoteSha && !confirm('Auf GitHub liegt eine neuere Version vor. Mit lokalen Änderungen überschreiben?')){
-        saving=false; updateStatusUI(); return;
+      if(remoteSha && sha!==remoteSha){
+        // Conflict: never auto-overwrite silently; ask in manual mode
+        if(silent){
+          saving=false; lastError='Konflikt: GitHub hat eine neuere Version'; updateStatusUI();
+          showToast({label:'Auto-Speichern pausiert: GitHub hat eine neuere Version. ⤓ Sync drücken oder manuell speichern.', duration:6000});
+          return;
+        }
+        if(!confirm('Auf GitHub liegt eine neuere Version vor. Mit lokalen Änderungen überschreiben?')){
+          saving=false; updateStatusUI(); return;
+        }
       }
     } else if(probe.status!==404) {
       throw new Error('Probe HTTP '+probe.status);
     }
   } catch(err){
     saving=false; lastError=err.message; updateStatusUI();
-    showToast({label:'Konnte Stand nicht prüfen: '+err.message, duration:4000});
+    if(!silent) showToast({label:'Konnte Stand nicht prüfen: '+err.message, duration:4000});
     return;
   }
 
+  const pushedJson = JSON.stringify(state,null,2);
+  const pushedSnap = currentSnapshot();
   const body={
     message:'Update ladder '+new Date().toISOString().slice(0,16).replace('T',' '),
-    content:b64encode(JSON.stringify(state,null,2)),
+    content:b64encode(pushedJson),
     branch:cfg.branch||'main'
   };
   if(sha) body.sha=sha;
@@ -1920,10 +2036,18 @@ async function pushToGitHub(){
     }
     const j=await res.json();
     remoteSha=j.content.sha;
+    lastSyncedSnapshot = pushedSnap;
     discardLocal();
     lastSyncedAt = Date.now();
-    saving=false; updateStatusUI();
-    showToast({label:'Gespeichert ✓', duration:2000});
+    saving=false;
+    // If state changed during the push, mark dirty again and schedule
+    if(currentSnapshot() !== lastSyncedSnapshot){
+      dirty = true;
+      localStorage.setItem(STORAGE_KEY, currentSnapshot());
+      scheduleAutoSave();
+    }
+    updateStatusUI();
+    showToast({label: silent ? 'Auto gespeichert ✓' : 'Gespeichert ✓', duration: silent ? 1600 : 2000});
   } catch(err){
     saving=false; lastError=err.message; updateStatusUI();
     showToast({label:'Speichern fehlgeschlagen: '+err.message, duration:4000});
@@ -1995,6 +2119,7 @@ headerMenu.addEventListener('click', e=>{
   if(act==='pull') pullFromGitHub({silent:false});
   else if(act==='discard') resetLocal();
   else if(act==='login') openLoginDialog();
+  else if(act==='toggle-autosave') setAutoSave(!autoSaveEnabled);
   else if(act==='import') document.getElementById('file-input').click();
   else if(act==='export') exportXlsx();
   else if(act==='help') openHelp();
@@ -2372,6 +2497,14 @@ document.addEventListener('keydown', e=>{
     area.appendChild(link);
   },{once:true});
 })();
+
+/* Beforeunload warning when there are unpushed changes */
+window.addEventListener('beforeunload', e => {
+  if(dirty){
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
 
 renderAll();
 // On startup, try to pull from GitHub if no local edits
