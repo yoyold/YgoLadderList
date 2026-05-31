@@ -311,10 +311,86 @@ kbd{
   animation:toast-in .15s ease-out
 }
 
+/* Match-Eingabe: Combobox + Recents + Swap */
+.enter-row{display:grid;grid-template-columns:1fr auto 1fr auto;gap:10px;align-items:stretch}
+.combobox{position:relative;min-width:0}
+.combo-input{
+  width:100%;background:rgba(7,9,20,.6);color:var(--text);
+  border:1px solid var(--border-2);padding:9px 12px;border-radius:4px;
+  font-size:14px;font-family:Inter,system-ui,sans-serif
+}
+.combo-input:focus{outline:0;border-color:var(--gold);
+  box-shadow:0 0 0 2px rgba(217,179,74,.22)}
+.combo-input[data-deck-idx]{
+  border-color:var(--gold-3);
+  background:linear-gradient(180deg,rgba(217,179,74,.06),rgba(7,9,20,.6))
+}
+.combo-list{
+  position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:30;
+  max-height:280px;overflow-y:auto;
+  background:var(--panel);border:1px solid var(--gold-3);border-radius:4px;
+  box-shadow:0 16px 40px rgba(0,0,0,.6),0 0 0 1px rgba(217,179,74,.18) inset;
+  padding:4px 0
+}
+.combo-item{
+  padding:7px 14px;cursor:pointer;font-size:13px;color:var(--text);
+  border-left:3px solid transparent
+}
+.combo-item.highlighted{
+  background:rgba(217,179,74,.10);border-left-color:var(--gold)
+}
+.combo-item b{color:var(--gold-2);font-weight:600}
+.combo-empty{padding:12px 14px;color:var(--muted);font-size:12px;text-align:center}
+
+.swap-btn{
+  padding:0 12px;font-size:18px;line-height:1;color:var(--gold-2);
+  font-family:Inter,sans-serif;font-weight:400;letter-spacing:0;text-transform:none;
+  background:transparent;border:1px solid var(--border-2)
+}
+.swap-btn:hover{transform:rotate(180deg);border-color:var(--gold-3);background:rgba(217,179,74,.08)}
+.swap-btn{transition:transform .25s,border-color .15s,background .15s}
+
+.submit-btn{padding:9px 18px}
+
+.recents-block{margin-top:14px}
+.recent-label{
+  font-family:Cinzel,serif;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:6px
+}
+.recent-strip{display:flex;gap:6px;flex-wrap:wrap;min-height:30px}
+.recent-empty{color:var(--muted);font-size:12px;font-style:italic;padding:6px 0}
+.chip{
+  background:rgba(7,9,20,.5);border:1px solid var(--border-2);
+  color:var(--text);padding:5px 11px;border-radius:999px;
+  font-size:12px;cursor:pointer;font-family:Inter,sans-serif;
+  display:inline-flex;align-items:center;gap:6px;
+  transition:background .12s,border-color .12s,color .12s
+}
+.chip:hover{background:rgba(217,179,74,.10);border-color:var(--gold-3);color:var(--gold-2)}
+.chip.matchup{padding:5px 12px}
+.chip.matchup .vs{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.08em;font-family:Cinzel,serif}
+.chip.matchup:hover .vs{color:var(--gold-2)}
+
+/* FAB */
+.fab{
+  position:fixed;bottom:24px;right:24px;z-index:100;
+  width:58px;height:58px;border-radius:50%;
+  background:linear-gradient(180deg,var(--gold-2) 0%,var(--gold) 50%,var(--gold-3) 100%);
+  color:#1a1430;border:1px solid var(--gold-3);
+  font-size:22px;font-weight:800;cursor:pointer;
+  box-shadow:0 10px 30px rgba(0,0,0,.6),0 0 0 1px rgba(217,179,74,.3) inset,0 0 22px rgba(217,179,74,.35);
+  display:flex;align-items:center;justify-content:center;line-height:1;
+  transition:transform .15s,box-shadow .15s,opacity .25s
+}
+.fab:hover{transform:scale(1.08);
+  box-shadow:0 12px 36px rgba(0,0,0,.7),0 0 0 1px rgba(217,179,74,.4) inset,0 0 32px rgba(217,179,74,.55)}
+.fab:active{transform:scale(.96)}
+body[data-active-tab="enter"] .fab{transform:translateY(140%) scale(.85);opacity:0;pointer-events:none}
+
 /* Toasts */
-#toast-container{position:fixed;bottom:20px;right:20px;z-index:200;
+#toast-container{position:fixed;bottom:100px;right:24px;z-index:200;
   display:flex;flex-direction:column-reverse;gap:8px;
-  pointer-events:none;max-width:calc(100vw - 40px)}
+  pointer-events:none;max-width:calc(100vw - 48px)}
 .toast{position:relative;overflow:hidden;
   background:linear-gradient(180deg,rgba(16,21,53,.97),rgba(13,18,40,.97));
   border:1px solid var(--gold-3);border-radius:6px;
@@ -339,8 +415,12 @@ kbd{
 @keyframes toast-out{to{transform:translateX(20px);opacity:0}}
 @keyframes toast-progress{to{transform:scaleX(0)}}
 @media (max-width:700px){
-  #toast-container{bottom:14px;right:14px;left:14px;max-width:none}
+  #toast-container{bottom:92px;right:14px;left:14px;max-width:none}
   .toast{min-width:0;max-width:none;width:100%}
+  .fab{bottom:18px;right:18px;width:52px;height:52px;font-size:20px}
+  .enter-row{grid-template-columns:1fr;gap:8px}
+  .swap-btn{justify-self:center;width:40px;height:36px;padding:0}
+  .submit-btn{width:100%}
 }
 
 /* Mobile crosstable — list view per deck */
@@ -458,13 +538,29 @@ kbd{
   <section id="enter" class="section">
     <div class="card">
       <h2>Match-Ergebnis</h2>
-      <div class="row">
-        <select id="enter-winner"></select>
-        <span class="muted ygo-font">schlägt</span>
-        <select id="enter-loser"></select>
-        <button class="btn gold" onclick="submitResult()">Speichern</button>
+      <div class="enter-row">
+        <div class="combobox">
+          <input id="enter-winner-input" class="combo-input" placeholder="Sieger…" autocomplete="off" spellcheck="false">
+          <div class="combo-list" id="enter-winner-list" hidden></div>
+        </div>
+        <button class="btn ghost swap-btn" id="swap-btn" type="button" title="Sieger/Verlierer tauschen" aria-label="Sieger und Verlierer tauschen">⇄</button>
+        <div class="combobox">
+          <input id="enter-loser-input" class="combo-input" placeholder="Verlierer…" autocomplete="off" spellcheck="false">
+          <div class="combo-list" id="enter-loser-list" hidden></div>
+        </div>
+        <button class="btn gold submit-btn" id="submit-btn" type="button" onclick="submitResult()">Speichern</button>
       </div>
-      <p class="help">Vorhandene Werte werden überschrieben. Im Crosstable kannst du Zellen direkt anklicken.</p>
+
+      <div class="recents-block">
+        <div class="recent-label">Häufig verwendet</div>
+        <div class="recent-strip" id="recent-decks-strip"></div>
+      </div>
+      <div class="recents-block">
+        <div class="recent-label">Letzte Matches</div>
+        <div class="recent-strip" id="recent-matchups-strip"></div>
+      </div>
+
+      <p class="help">Tippen filtert · <kbd>↑</kbd>/<kbd>↓</kbd> wählen · <kbd>Enter</kbd> übernehmen · <kbd>Tab</kbd> ins nächste Feld. Vorhandene Werte werden überschrieben.</p>
     </div>
     <div class="card">
       <h2>Direktduell</h2>
@@ -508,6 +604,8 @@ kbd{
     </div>
   </section>
 </main>
+
+<button id="fab" class="fab" type="button" aria-label="Neues Match-Ergebnis" title="Neues Match (N)">⚔</button>
 
 <dialog id="palette-dialog">
   <div class="dlg-body">
@@ -768,6 +866,12 @@ function setResult(i,j,value){
       state.matrix[j][i]=1-value;
     }
   });
+  if(value !== null){
+    bumpRecentDeck(dA);
+    bumpRecentDeck(dB);
+    if(value === 1) bumpRecentMatchup(dA, dB);
+    else bumpRecentMatchup(dB, dA);
+  }
 }
 
 function addDeck(name){
@@ -821,10 +925,12 @@ function switchTab(name){
   document.querySelectorAll('.section').forEach(s=>{
     s.classList.toggle('active', s.id === name);
   });
+  document.body.dataset.activeTab = name;
 }
 document.querySelectorAll('nav button').forEach(b=>{
   b.addEventListener('click',()=>switchTab(b.dataset.tab));
 });
+document.body.dataset.activeTab = 'standings';
 
 /* ---------- Standings ---------- */
 function renderStandings(){
@@ -860,46 +966,277 @@ document.getElementById('standings-search').addEventListener('input',renderStand
 document.getElementById('standings-played-only').addEventListener('change',renderStandings);
 
 /* ---------- Enter ---------- */
-function fillSelect(sel,preserve){
-  const prev=preserve?sel.value:null;
-  sel.innerHTML='';
-  const opts=state.decks.map((d,i)=>({d,i})).sort((a,b)=>a.d.localeCompare(b.d));
-  for(const o of opts){
-    const opt=document.createElement('option');
-    opt.value=o.i; opt.textContent=o.d; sel.appendChild(opt);
-  }
-  if(prev!==null && state.decks[+prev]) sel.value=prev;
+/* ---------- Recents (deck + matchup hints; UX only, separate from undo) ---------- */
+let recentDecks = [];      // names, most recent first
+let recentMatchups = [];   // {w, l, ts}
+const MAX_RECENT_DECKS = 8;
+const MAX_RECENT_MATCHUPS = 5;
+const RECENT_KEY = 'ygo-recent-v1';
+
+(function loadRecents(){
+  try {
+    const raw = JSON.parse(localStorage.getItem(RECENT_KEY) || '{}');
+    recentDecks = Array.isArray(raw.decks) ? raw.decks : [];
+    recentMatchups = Array.isArray(raw.matchups) ? raw.matchups : [];
+  } catch(e){}
+})();
+function saveRecents(){
+  localStorage.setItem(RECENT_KEY, JSON.stringify({decks:recentDecks, matchups:recentMatchups}));
 }
+function bumpRecentDeck(name){
+  recentDecks = [name, ...recentDecks.filter(n => n !== name)].slice(0, MAX_RECENT_DECKS);
+  saveRecents();
+  renderRecents();
+}
+function bumpRecentMatchup(wName, lName){
+  recentMatchups = [
+    {w:wName, l:lName, ts:Date.now()},
+    ...recentMatchups.filter(m => !((m.w===wName && m.l===lName) || (m.w===lName && m.l===wName)))
+  ].slice(0, MAX_RECENT_MATCHUPS);
+  saveRecents();
+  renderRecents();
+}
+
+/* ---------- Combobox (typeahead picker for decks) ---------- */
+function makeCombobox(input, list){
+  let filtered = [];
+  let highlighted = 0;
+  let opened = false;
+
+  function render(){
+    const q = input.value.trim().toLowerCase();
+    filtered = state.decks.map((d,i)=>({name:d,i}))
+      .filter(o => !q || o.name.toLowerCase().includes(q))
+      .sort((a,b)=>{
+        if(q){
+          const aP = a.name.toLowerCase().startsWith(q);
+          const bP = b.name.toLowerCase().startsWith(q);
+          if(aP !== bP) return bP - aP;
+        }
+        return a.name.localeCompare(b.name);
+      })
+      .slice(0, 60);
+    if(highlighted >= filtered.length) highlighted = Math.max(0, filtered.length-1);
+    if(filtered.length === 0){
+      list.innerHTML = '<div class="combo-empty">Kein Deck gefunden</div>';
+      return;
+    }
+    let html = '';
+    for(let i=0;i<filtered.length;i++){
+      const o = filtered[i];
+      html += '<div class="combo-item'+(i===highlighted?' highlighted':'')+'" data-idx="'+i+'">'+
+        (q ? highlightQuery(o.name, q) : escapeHtml(o.name))+'</div>';
+    }
+    list.innerHTML = html;
+    const hl = list.querySelector('.combo-item.highlighted');
+    if(hl) hl.scrollIntoView({block:'nearest'});
+  }
+  function open(){ if(!opened){ opened = true; list.hidden = false; render(); } }
+  function close(){ opened = false; list.hidden = true; }
+  function select(o){
+    if(!o) return;
+    input.value = o.name;
+    input.dataset.deckIdx = o.i;
+    close();
+    renderH2H();
+  }
+
+  input.addEventListener('focus', ()=>{ highlighted = 0; open(); });
+  input.addEventListener('input', ()=>{
+    delete input.dataset.deckIdx;
+    highlighted = 0;
+    open();
+    renderH2H();
+  });
+  input.addEventListener('blur', ()=>{
+    setTimeout(()=>{
+      // Try exact match on blur
+      const v = input.value.trim().toLowerCase();
+      const idx = state.decks.findIndex(d => d.toLowerCase() === v);
+      if(idx >= 0){
+        input.value = state.decks[idx];
+        input.dataset.deckIdx = idx;
+      }
+      close();
+      renderH2H();
+    }, 140);
+  });
+  input.addEventListener('keydown', e=>{
+    if(e.key === 'ArrowDown'){
+      e.preventDefault();
+      if(!opened){ open(); return; }
+      highlighted = Math.min(highlighted+1, filtered.length-1);
+      render();
+    } else if(e.key === 'ArrowUp'){
+      e.preventDefault();
+      if(!opened) return;
+      highlighted = Math.max(highlighted-1, 0);
+      render();
+    } else if(e.key === 'Enter'){
+      e.preventDefault();
+      if(filtered[highlighted]) select(filtered[highlighted]);
+      else if(input.dataset.deckIdx !== undefined) submitResult();
+    } else if(e.key === 'Tab'){
+      if(opened && filtered[highlighted]){
+        const o = filtered[highlighted];
+        input.value = o.name;
+        input.dataset.deckIdx = o.i;
+      }
+      close();
+    } else if(e.key === 'Escape'){
+      if(opened){ e.preventDefault(); close(); }
+    }
+  });
+  list.addEventListener('mousedown', e=>{
+    const item = e.target.closest('.combo-item');
+    if(!item) return;
+    e.preventDefault();
+    select(filtered[+item.dataset.idx]);
+  });
+  list.addEventListener('mousemove', e=>{
+    const item = e.target.closest('.combo-item');
+    if(!item) return;
+    const idx = +item.dataset.idx;
+    if(idx === highlighted) return;
+    highlighted = idx;
+    list.querySelectorAll('.combo-item').forEach((el,i)=>el.classList.toggle('highlighted', i===highlighted));
+  });
+
+  return {
+    setDeck(i){ if(state.decks[i]){ input.value = state.decks[i]; input.dataset.deckIdx = i; renderH2H(); } },
+    getDeck(){ const idx = parseInt(input.dataset.deckIdx, 10); return isNaN(idx) ? -1 : idx; },
+    clear(){ input.value=''; delete input.dataset.deckIdx; },
+    refresh(){ if(opened) render(); }
+  };
+}
+
+const winnerCombo = makeCombobox(
+  document.getElementById('enter-winner-input'),
+  document.getElementById('enter-winner-list')
+);
+const loserCombo = makeCombobox(
+  document.getElementById('enter-loser-input'),
+  document.getElementById('enter-loser-list')
+);
+
+let lastFocusedEnterInput = null;
+['enter-winner-input','enter-loser-input'].forEach(id=>{
+  document.getElementById(id).addEventListener('focus', e => lastFocusedEnterInput = e.target);
+});
+
 function renderEnter(){
-  const sw=document.getElementById('enter-winner');
-  const sl=document.getElementById('enter-loser');
-  const had=sw.value && sl.value;
-  fillSelect(sw,true); fillSelect(sl,true);
-  if(!had && state.decks.length>1){ sw.selectedIndex=0; sl.selectedIndex=1; }
+  // After deck list changes, re-validate the currently selected indices by name
+  ['enter-winner-input','enter-loser-input'].forEach(id=>{
+    const inp = document.getElementById(id);
+    if(inp.value){
+      const idx = state.decks.findIndex(d => d.toLowerCase() === inp.value.toLowerCase());
+      if(idx >= 0) inp.dataset.deckIdx = idx;
+      else delete inp.dataset.deckIdx;
+    }
+  });
+  renderRecents();
   renderH2H();
 }
+
 function submitResult(){
-  const w=parseInt(document.getElementById('enter-winner').value,10);
-  const l=parseInt(document.getElementById('enter-loser').value,10);
-  if(w===l){ alert('Sieger und Verlierer müssen unterschiedlich sein'); return; }
-  setResult(w,l,1);
+  const w = winnerCombo.getDeck();
+  const l = loserCombo.getDeck();
+  if(w < 0 || l < 0){
+    showToast({label:'Bitte beide Decks aus der Liste auswählen', duration:3000});
+    return;
+  }
+  if(w === l){
+    showToast({label:'Sieger und Verlierer müssen unterschiedlich sein', duration:3000});
+    return;
+  }
+  setResult(w, l, 1);
+  // Reset inputs for the next match, keep loser focus for quick re-entry
+  winnerCombo.clear();
+  loserCombo.clear();
+  document.getElementById('enter-winner-input').focus();
 }
+
 function renderH2H(){
-  const wEl=document.getElementById('enter-winner');
-  const lEl=document.getElementById('enter-loser');
-  if(!wEl||!lEl) return;
-  const w=+wEl.value, l=+lEl.value;
-  const box=document.getElementById('h2h-result');
-  if(isNaN(w)||isNaN(l)||w===l){ box.innerHTML=''; return; }
-  const v=state.matrix[w][l];
-  let txt='';
-  if(v===1) txt='<b>'+escapeHtml(state.decks[w])+'</b> hat gegen <b>'+escapeHtml(state.decks[l])+'</b> gewonnen.';
-  else if(v===0) txt='<b>'+escapeHtml(state.decks[w])+'</b> hat gegen <b>'+escapeHtml(state.decks[l])+'</b> verloren.';
-  else txt='Noch kein Ergebnis zwischen <b>'+escapeHtml(state.decks[w])+'</b> und <b>'+escapeHtml(state.decks[l])+'</b>.';
-  box.innerHTML=txt;
+  const w = winnerCombo.getDeck();
+  const l = loserCombo.getDeck();
+  const box = document.getElementById('h2h-result');
+  if(w<0 || l<0 || w===l){ box.className='muted'; box.innerHTML='Wähle zwei Decks oben.'; return; }
+  const v = state.matrix[w][l];
+  box.className = '';
+  if(v===1) box.innerHTML = '<b>'+escapeHtml(state.decks[w])+'</b> hat gegen <b>'+escapeHtml(state.decks[l])+'</b> gewonnen.';
+  else if(v===0) box.innerHTML = '<b>'+escapeHtml(state.decks[w])+'</b> hat gegen <b>'+escapeHtml(state.decks[l])+'</b> verloren.';
+  else box.innerHTML = 'Noch kein Ergebnis zwischen <b>'+escapeHtml(state.decks[w])+'</b> und <b>'+escapeHtml(state.decks[l])+'</b>.';
 }
-document.addEventListener('change',e=>{
-  if(e.target.id==='enter-winner'||e.target.id==='enter-loser') renderH2H();
+
+/* ---------- Swap button ---------- */
+document.getElementById('swap-btn').addEventListener('click', ()=>{
+  const wInp = document.getElementById('enter-winner-input');
+  const lInp = document.getElementById('enter-loser-input');
+  const wVal = wInp.value, lVal = lInp.value;
+  const wIdx = wInp.dataset.deckIdx, lIdx = lInp.dataset.deckIdx;
+  wInp.value = lVal; lInp.value = wVal;
+  if(lIdx!==undefined) wInp.dataset.deckIdx = lIdx; else delete wInp.dataset.deckIdx;
+  if(wIdx!==undefined) lInp.dataset.deckIdx = wIdx; else delete lInp.dataset.deckIdx;
+  renderH2H();
+});
+
+/* ---------- Recents UI ---------- */
+function renderRecents(){
+  const decksStrip = document.getElementById('recent-decks-strip');
+  const matchStrip = document.getElementById('recent-matchups-strip');
+  if(!decksStrip || !matchStrip) return;
+
+  const validDecks = recentDecks
+    .map(name => state.decks.indexOf(name))
+    .filter(i => i >= 0);
+  if(validDecks.length === 0){
+    decksStrip.innerHTML = '<span class="recent-empty">Noch keine — sobald du Matches einträgst, erscheinen die Decks hier.</span>';
+  } else {
+    decksStrip.innerHTML = validDecks.map(i =>
+      '<button type="button" class="chip" data-i="'+i+'">'+escapeHtml(state.decks[i])+'</button>'
+    ).join('');
+  }
+
+  const validMatchups = recentMatchups
+    .map(m => ({w: state.decks.indexOf(m.w), l: state.decks.indexOf(m.l), ts:m.ts}))
+    .filter(m => m.w >= 0 && m.l >= 0);
+  if(validMatchups.length === 0){
+    matchStrip.innerHTML = '<span class="recent-empty">Noch keine Matches gespeichert.</span>';
+  } else {
+    matchStrip.innerHTML = validMatchups.map(m =>
+      '<button type="button" class="chip matchup" data-w="'+m.w+'" data-l="'+m.l+'">'+
+        escapeHtml(state.decks[m.w])+' <span class="vs">schlägt</span> '+escapeHtml(state.decks[m.l])+
+      '</button>'
+    ).join('');
+  }
+}
+
+document.getElementById('recent-decks-strip').addEventListener('click', e=>{
+  const btn = e.target.closest('button[data-i]');
+  if(!btn) return;
+  const i = +btn.dataset.i;
+  const winnerInp = document.getElementById('enter-winner-input');
+  const loserInp = document.getElementById('enter-loser-input');
+  // Choose the input that's empty, or last focused, or winner as default
+  let target;
+  if(lastFocusedEnterInput) target = lastFocusedEnterInput;
+  else if(!winnerInp.value) target = winnerInp;
+  else if(!loserInp.value) target = loserInp;
+  else target = winnerInp;
+  target.value = state.decks[i];
+  target.dataset.deckIdx = i;
+  renderH2H();
+  // Move focus to the other input for fast follow-up
+  const other = target === winnerInp ? loserInp : winnerInp;
+  if(!other.dataset.deckIdx) other.focus();
+});
+
+document.getElementById('recent-matchups-strip').addEventListener('click', e=>{
+  const btn = e.target.closest('button.matchup');
+  if(!btn) return;
+  winnerCombo.setDeck(+btn.dataset.w);
+  loserCombo.setDeck(+btn.dataset.l);
+  document.getElementById('submit-btn').focus();
 });
 
 /* ---------- Crosstable ---------- */
@@ -1243,6 +1580,12 @@ document.getElementById('logout-btn').addEventListener('click',()=>{
   updateStatusUI();
 });
 
+/* ---------- FAB (floating action button) ---------- */
+document.getElementById('fab').addEventListener('click', ()=>{
+  switchTab('enter');
+  setTimeout(()=>document.getElementById('enter-winner-input').focus(), 60);
+});
+
 /* ---------- Smart sync button + overflow menu ---------- */
 document.getElementById('sync-btn').addEventListener('click', handleSyncClick);
 
@@ -1391,7 +1734,7 @@ function openPalette(){
 function buildPaletteCommands(){
   return [
     {label:'Neues Match-Ergebnis', kbd:'N', ico:'⚔', kind:'cmd',
-      action:()=>{ switchTab('enter'); setTimeout(()=>document.getElementById('enter-winner').focus(),50); }},
+      action:()=>{ switchTab('enter'); setTimeout(()=>document.getElementById('enter-winner-input').focus(),50); }},
     {label:'Von GitHub laden', kbd:'R', ico:'⤓', kind:'cmd',
       action:()=>pullFromGitHub({silent:false})},
     {label:'Zu GitHub speichern', kbd:'S', ico:'⤒', kind:'cmd',
@@ -1607,7 +1950,7 @@ document.addEventListener('keydown', e=>{
     case 'n': case 'N':
       e.preventDefault();
       switchTab('enter');
-      setTimeout(()=>document.getElementById('enter-winner').focus(), 50);
+      setTimeout(()=>document.getElementById('enter-winner-input').focus(), 50);
       break;
     case 's': case 'S':
       e.preventDefault();
