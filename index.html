@@ -432,6 +432,78 @@ kbd{
 .fab:active{transform:scale(.96)}
 body[data-active-tab="enter"] .fab{transform:translateY(140%) scale(.85);opacity:0;pointer-events:none}
 
+/* Deck detail dialog */
+#deck-dialog{max-width:600px;width:95%}
+.deck-title-row{display:flex;align-items:center;gap:10px;padding-bottom:12px;
+  border-bottom:1px solid var(--border);margin-bottom:14px}
+#deck-name{margin:0;font-size:22px;flex:1;min-width:0;font-family:Cinzel,serif;
+  color:var(--gold-2);letter-spacing:.06em;line-height:1.2;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icon-btn{padding:5px 10px;font-size:14px;font-family:Inter,sans-serif;
+  letter-spacing:0;text-transform:none;color:var(--gold-2);font-weight:400}
+.deck-summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.stat-pill{flex:1;min-width:90px;
+  background:rgba(7,9,20,.5);border:1px solid var(--border-2);border-radius:6px;
+  padding:9px 13px}
+.stat-pill .lbl{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--muted);font-family:Cinzel,serif;font-weight:600}
+.stat-pill .val{display:block;font-size:18px;color:var(--text);font-weight:700;
+  font-variant-numeric:tabular-nums;margin-top:2px;font-family:Cinzel,serif}
+.stat-pill.rank-pill{border-color:var(--gold-3);
+  background:linear-gradient(180deg,rgba(217,179,74,.08),rgba(7,9,20,.5))}
+.stat-pill.rank-pill .val{color:var(--gold-2)}
+.wr-track{height:6px;background:rgba(42,49,112,.5);border-radius:3px;
+  overflow:hidden;margin:8px 0 16px;border:1px solid rgba(42,49,112,.6)}
+.wr-fill{height:100%;background:linear-gradient(90deg,var(--gold-3),var(--gold))}
+.matchup-highlights{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.hl-card{border:1px solid var(--border-2);border-radius:6px;padding:11px 13px;
+  background:rgba(7,9,20,.5)}
+.hl-card.win{border-color:rgba(43,184,116,.4);
+  background:linear-gradient(180deg,rgba(43,184,116,.08),rgba(7,9,20,.5))}
+.hl-card.loss{border-color:rgba(224,82,77,.4);
+  background:linear-gradient(180deg,rgba(224,82,77,.08),rgba(7,9,20,.5))}
+.hl-lbl{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+  font-family:Cinzel,serif;line-height:1.3}
+.hl-name{margin-top:5px;font-size:14px;color:var(--gold-2);font-weight:600;
+  font-family:Cinzel,serif}
+.hl-meta{margin-top:4px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.hl-empty{padding:14px;text-align:center;color:var(--muted);font-style:italic;
+  border:1px dashed var(--border);border-radius:6px;grid-column:1/-1}
+.deck-section-title{margin:18px 0 8px;font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);font-family:Cinzel,serif;font-weight:700;
+  display:flex;justify-content:space-between;align-items:baseline}
+.deck-section-title .count{font-size:10px;color:var(--muted)}
+#deck-matchup-filter{width:100%;margin-bottom:8px}
+#deck-matchups{display:flex;flex-direction:column;gap:4px;max-height:300px;
+  overflow-y:auto;padding-right:4px}
+.deck-match-row{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:7px 11px;background:rgba(7,9,20,.4);
+  border:1px solid var(--border-2);border-left-width:3px;border-radius:3px;
+  color:var(--text);font-size:13px;cursor:pointer;text-align:left;
+  font:inherit;transition:border-color .12s,background .12s}
+.deck-match-row:hover{border-color:var(--gold-3);background:rgba(217,179,74,.06)}
+.deck-match-row.win{border-left-color:var(--win-2)}
+.deck-match-row.loss{border-left-color:var(--loss-2)}
+.deck-match-row.empty{border-left-color:transparent;opacity:.7}
+.deck-match-row.empty:hover{opacity:1}
+.dmr-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dmr-result{font-size:10px;font-weight:700;font-family:Cinzel,serif;letter-spacing:.08em;
+  text-transform:uppercase;padding:3px 9px;border-radius:999px;flex:0 0 auto}
+.deck-match-row.win .dmr-result{background:rgba(43,184,116,.25);color:var(--win-2)}
+.deck-match-row.loss .dmr-result{background:rgba(224,82,77,.25);color:var(--loss-2)}
+.deck-match-row.empty .dmr-result{background:rgba(255,255,255,.06);color:var(--muted);
+  border:1px solid var(--border)}
+.rename-input{width:100%;font-size:20px;font-family:Cinzel,serif;
+  background:rgba(7,9,20,.7);border:1px solid var(--gold);color:var(--gold-2);
+  padding:5px 10px;border-radius:4px;letter-spacing:.06em;
+  box-shadow:0 0 0 2px rgba(217,179,74,.2)}
+
+/* Click affordances on existing tables */
+table.standings tbody tr[data-deck-i]{cursor:pointer}
+table.standings tbody tr[data-deck-i]:hover .deck{color:var(--gold-2)}
+table.cross thead th[data-col-j],
+table.cross tbody th[data-row-i]{cursor:pointer}
+
 /* Toasts */
 #toast-container{position:fixed;bottom:100px;right:24px;z-index:200;
   display:flex;flex-direction:column-reverse;gap:8px;
@@ -704,6 +776,25 @@ body[data-active-tab="enter"] .fab{transform:translateY(140%) scale(.85);opacity
   </div>
   <div class="dlg-actions">
     <button class="btn ghost" onclick="document.getElementById('privacy-dialog').close()">Schließen</button>
+  </div>
+</dialog>
+
+<dialog id="deck-dialog">
+  <div class="dlg-body">
+    <div class="deck-title-row">
+      <h3 id="deck-name"></h3>
+      <button class="btn ghost icon-btn" id="deck-rename-btn" type="button" title="Umbenennen" aria-label="Umbenennen">✎</button>
+    </div>
+    <div id="deck-summary"></div>
+    <div id="deck-highlights"></div>
+    <div class="deck-section-title">Alle Matchups</div>
+    <input id="deck-matchup-filter" placeholder="Gegner filtern…" autocomplete="off">
+    <div id="deck-matchups"></div>
+  </div>
+  <div class="dlg-actions">
+    <button class="btn ghost" id="deck-action-cross" type="button">Im Crosstable</button>
+    <button class="btn danger" id="deck-action-delete" type="button">Löschen</button>
+    <button class="btn ghost" onclick="document.getElementById('deck-dialog').close()" type="button">Schließen</button>
   </div>
 </dialog>
 
@@ -997,7 +1088,7 @@ function renderStandings(){
     if(rank===1 && r.g>0){ cls='gold'; medal='<span class="medal gold"></span>'; }
     else if(rank===2 && r.g>0){ cls='silver'; medal='<span class="medal silver"></span>'; }
     else if(rank===3 && r.g>0){ cls='bronze'; medal='<span class="medal bronze"></span>'; }
-    html+='<tr class="'+cls+'"><td class="rank">'+(medal||rank)+'</td>'+
+    html+='<tr class="'+cls+'" data-deck-i="'+r.i+'"><td class="rank">'+(medal||rank)+'</td>'+
       '<td class="deck">'+escapeHtml(r.name)+'</td>'+
       '<td class="num">'+r.w+'</td>'+
       '<td class="num">'+r.l+'</td>'+
@@ -1009,6 +1100,11 @@ function renderStandings(){
 }
 document.getElementById('standings-search').addEventListener('input',renderStandings);
 document.getElementById('standings-played-only').addEventListener('change',renderStandings);
+document.getElementById('standings-body').addEventListener('click', e=>{
+  const tr = e.target.closest('tr[data-deck-i]');
+  if(!tr) return;
+  openDeckDetail(+tr.dataset.deckI);
+});
 
 /* ---------- Enter ---------- */
 /* ---------- Recents (deck + matchup hints; UX only, separate from undo) ---------- */
@@ -1308,6 +1404,13 @@ function renderCross(){
   html+='</tbody></table>';
   wrap.innerHTML=html;
   attachCrossHair(wrap);
+  // Header click → deck detail
+  wrap.querySelectorAll('th[data-row-i],th[data-col-j]').forEach(th=>{
+    th.addEventListener('click', ()=>{
+      const i = th.dataset.rowI !== undefined ? +th.dataset.rowI : +th.dataset.colJ;
+      openDeckDetail(i);
+    });
+  });
   wrap.querySelectorAll('td[data-i]:not(.diag)').forEach(td=>{
     td.addEventListener('click',()=>{
       const i=+td.dataset.i, j=+td.dataset.j;
@@ -1397,6 +1500,159 @@ function attachCrossHair(wrap){
     tip.hidden = true;
   });
 }
+/* ---------- Deck-Detail-Dialog ---------- */
+let currentDeckDialogI = -1;
+const deckDlg = document.getElementById('deck-dialog');
+
+function openDeckDetail(i){
+  if(!state.decks[i]) return;
+  currentDeckDialogI = i;
+  renderDeckDialog();
+  if(!deckDlg.open) deckDlg.showModal();
+  // Reset filter on open
+  document.getElementById('deck-matchup-filter').value = '';
+}
+
+function renderDeckDialog(){
+  const i = currentDeckDialogI;
+  if(i < 0 || !state.decks[i]){ deckDlg.close(); return; }
+  const s = stats(i);
+  document.getElementById('deck-name').textContent = state.decks[i];
+
+  // Compute rank among played decks (matches standings sort)
+  const ranked = state.decks.map((d,idx)=>({idx, name:d, ...stats(idx)}))
+    .sort((a,b)=> b.w-a.w || b.wr-a.wr || a.l-b.l || a.name.localeCompare(b.name));
+  const myRank = ranked.findIndex(r=>r.idx===i) + 1;
+
+  const wrPct = s.g ? (s.wr*100).toFixed(1) : null;
+  let summary = '<div class="deck-summary">'+
+    '<div class="stat-pill"><span class="lbl">Wins</span><span class="val">'+s.w+'</span></div>'+
+    '<div class="stat-pill"><span class="lbl">Losses</span><span class="val">'+s.l+'</span></div>'+
+    '<div class="stat-pill"><span class="lbl">Winrate</span><span class="val">'+(wrPct?wrPct+'%':'—')+'</span></div>'+
+    (s.g>0 ? '<div class="stat-pill rank-pill"><span class="lbl">Rang</span><span class="val">#'+myRank+'</span></div>' : '')+
+    '</div>';
+  if(s.g>0){
+    summary += '<div class="wr-track"><div class="wr-fill" style="width:'+wrPct+'%"></div></div>';
+  } else {
+    summary += '<div style="height:14px"></div>';
+  }
+  document.getElementById('deck-summary').innerHTML = summary;
+
+  // Best matchup (strongest opponent we beat) / Worst (weakest opponent we lost to)
+  const opps = [];
+  for(let j=0;j<state.decks.length;j++){
+    if(i===j) continue;
+    const v = state.matrix[i][j];
+    if(v===null) continue;
+    const oppS = stats(j);
+    opps.push({j, v, name:state.decks[j], oppWr:oppS.wr, oppWins:oppS.w, oppLosses:oppS.l, oppG:oppS.g});
+  }
+  const beaten = opps.filter(o=>o.v===1).sort((a,b)=> b.oppWr-a.oppWr || b.oppWins-a.oppWins);
+  const lostTo = opps.filter(o=>o.v===0).sort((a,b)=> a.oppWr-b.oppWr || a.oppWins-b.oppWins);
+  const best = beaten[0];
+  const worst = lostTo[0];
+
+  let hl = '<div class="matchup-highlights">';
+  if(best){
+    hl += '<div class="hl-card win"><div class="hl-lbl">Stärkster geschlagener Gegner</div>'+
+      '<div class="hl-name">'+escapeHtml(best.name)+'</div>'+
+      '<div class="hl-meta">Gegner: '+best.oppWins+'W · '+best.oppLosses+'L'+(best.oppG?' · '+(best.oppWr*100).toFixed(0)+'%':'')+'</div></div>';
+  }
+  if(worst){
+    hl += '<div class="hl-card loss"><div class="hl-lbl">Schwächster Gegner, verloren</div>'+
+      '<div class="hl-name">'+escapeHtml(worst.name)+'</div>'+
+      '<div class="hl-meta">Gegner: '+worst.oppWins+'W · '+worst.oppLosses+'L'+(worst.oppG?' · '+(worst.oppWr*100).toFixed(0)+'%':'')+'</div></div>';
+  }
+  if(!best && !worst){
+    hl += '<div class="hl-empty">Noch keine Matches eingetragen.</div>';
+  }
+  hl += '</div>';
+  document.getElementById('deck-highlights').innerHTML = hl;
+
+  // Section title with counts
+  const played = opps.length;
+  const open = state.decks.length - 1 - played;
+  const title = document.querySelector('#deck-dialog .deck-section-title');
+  if(title) title.innerHTML = 'Alle Matchups <span class="count">'+played+' gespielt · '+open+' offen</span>';
+
+  renderDeckMatchupsList();
+}
+
+function renderDeckMatchupsList(){
+  const i = currentDeckDialogI;
+  if(i < 0) return;
+  const filter = (document.getElementById('deck-matchup-filter').value || '').toLowerCase();
+  const items = state.decks.map((d,j)=>({d,j,v:state.matrix[i][j]}))
+    .filter(x=>x.j!==i)
+    .filter(x=>!filter || x.d.toLowerCase().includes(filter))
+    .sort((a,b)=>{
+      const rank = v=>v===1?0:v===0?1:2;
+      return rank(a.v)-rank(b.v) || a.d.localeCompare(b.d);
+    });
+  const list = document.getElementById('deck-matchups');
+  if(items.length===0){
+    list.innerHTML = '<div class="hl-empty" style="grid-column:auto">Kein Treffer</div>';
+    return;
+  }
+  list.innerHTML = items.map(it=>{
+    const cls = it.v===1?'win':it.v===0?'loss':'empty';
+    const lbl = it.v===1?'Sieg':it.v===0?'Niederl.':'offen';
+    return '<button type="button" class="deck-match-row '+cls+'" data-j="'+it.j+'">'+
+      '<span class="dmr-name">'+escapeHtml(it.d)+'</span>'+
+      '<span class="dmr-result">'+lbl+'</span>'+
+      '</button>';
+  }).join('');
+}
+
+document.getElementById('deck-matchup-filter').addEventListener('input', renderDeckMatchupsList);
+
+document.getElementById('deck-matchups').addEventListener('click', e=>{
+  const btn = e.target.closest('.deck-match-row');
+  if(!btn) return;
+  const i = currentDeckDialogI;
+  const j = +btn.dataset.j;
+  const v = state.matrix[i][j];
+  setResult(i, j, v===null ? 1 : v===1 ? 0 : null);
+});
+
+document.getElementById('deck-rename-btn').addEventListener('click', ()=>{
+  const i = currentDeckDialogI;
+  if(i < 0) return;
+  const nameEl = document.getElementById('deck-name');
+  const oldName = state.decks[i];
+  nameEl.innerHTML = '<input class="rename-input" value="'+escapeAttr(oldName)+'">';
+  const inp = nameEl.querySelector('input');
+  inp.focus(); inp.select();
+  let done = false;
+  const finish = (save)=>{
+    if(done) return; done = true;
+    if(save){
+      const v = inp.value.trim();
+      if(v && v !== oldName) renameDeck(i, v);
+    }
+    renderDeckDialog();
+  };
+  inp.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){ e.preventDefault(); finish(true); }
+    else if(e.key==='Escape'){ e.preventDefault(); finish(false); }
+  });
+  inp.addEventListener('blur', ()=>finish(true));
+});
+
+document.getElementById('deck-action-cross').addEventListener('click', ()=>{
+  const i = currentDeckDialogI;
+  deckDlg.close();
+  focusDeck(i);
+});
+
+document.getElementById('deck-action-delete').addEventListener('click', ()=>{
+  const i = currentDeckDialogI;
+  deckDlg.close();
+  deleteDeck(i);
+});
+
+deckDlg.addEventListener('close', ()=>{ currentDeckDialogI = -1; });
+
 function openCellDialog(i,j){
   const dlg=document.getElementById('cell-dialog');
   document.getElementById('cell-dlg-title').textContent=state.decks[i]+' vs '+state.decks[j];
@@ -1829,6 +2085,7 @@ function renderAll(){
   renderCrossMobile();
   renderManage();
   updateStatusUI();
+  if(deckDlg && deckDlg.open && currentDeckDialogI >= 0) renderDeckDialog();
 }
 
 document.getElementById('open-privacy').addEventListener('click',e=>{
@@ -1879,7 +2136,7 @@ function renderPalette(query){
   const cmds = buildPaletteCommands();
   const cmdMatches = q ? cmds.filter(c=>c.label.toLowerCase().includes(q)) : cmds;
   const deckMatches = state.decks.map((d,i)=>({label:d, i, kind:'deck', ico:'◆',
-    action:()=>focusDeck(i)}))
+    action:()=>openDeckDetail(i)}))
     .filter(d=>!q || d.label.toLowerCase().includes(q))
     .sort((a,b)=>a.label.localeCompare(b.label));
 
