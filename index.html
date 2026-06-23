@@ -169,6 +169,11 @@ table.standings{border-collapse:collapse;width:100%;font-size:13px}
 table.standings th,table.standings td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--border)}
 table.standings th{font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.06em;
   text-transform:uppercase;border-bottom:1px solid var(--border-strong)}
+table.standings th.sortable{cursor:pointer;user-select:none;white-space:nowrap}
+table.standings th.sortable:hover{color:var(--text-dim)}
+table.standings th.sort-active{color:var(--accent-bright)}
+table.standings th.sortable[data-dir="asc"]::after{content:'▲';font-size:8px;margin-left:5px;vertical-align:middle}
+table.standings th.sortable[data-dir="desc"]::after{content:'▼';font-size:8px;margin-left:5px;vertical-align:middle}
 table.standings tbody tr{transition:background .12s}
 table.standings tbody tr:hover{background:var(--surface-2)}
 table.standings .num{text-align:right;font-variant-numeric:tabular-nums}
@@ -189,8 +194,13 @@ table.standings tr.bronze td{background:rgba(205,127,68,.06)}
 .medal.bronze{background:radial-gradient(circle at 35% 30%,#f1cda0,var(--medal-bronze) 65%,#6e431c)}
 
 /* Crosstable */
+.btn.small{padding:5px 10px;font-size:11px}
 .cross-wrap{overflow:auto;max-height:calc(100vh - 240px);border:1px solid var(--border);
   border-radius:var(--r);background:var(--surface)}
+.cross-wrap.compact table.cross th,.cross-wrap.compact table.cross td{height:22px;min-width:22px;max-width:22px;font-size:10px}
+.cross-wrap.compact table.cross thead th{height:120px}
+.cross-wrap.compact table.cross thead th.corner,.cross-wrap.compact table.cross tbody th{min-width:170px;max-width:170px;font-size:11px}
+.cross-wrap.compact table.cross td.win,.cross-wrap.compact table.cross td.loss{font-size:11px}
 table.cross{border-collapse:separate;border-spacing:0;font-size:11px}
 table.cross th,table.cross td{border-right:1px solid var(--border);border-bottom:1px solid var(--border);
   padding:0;height:30px;min-width:30px;max-width:30px;text-align:center;background:var(--surface)}
@@ -288,6 +298,16 @@ dialog .field{margin-bottom:6px}
 kbd{display:inline-block;background:var(--surface-3);border:1px solid var(--border-strong);
   border-bottom-width:2px;border-radius:4px;padding:2px 7px;font-size:11px;font-family:var(--font);
   color:var(--text-dim);min-width:20px;text-align:center;line-height:1.3}
+
+/* Onboarding dialog */
+#onboard-dialog{max-width:460px}
+.onboard-step{display:flex;gap:14px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--border)}
+.onboard-step:last-child{border-bottom:0;padding-bottom:2px}
+.onboard-step b{font-size:14px}
+.onboard-step .help{font-size:12.5px}
+.ob-ico{flex:0 0 auto;width:36px;height:36px;border-radius:9px;background:var(--accent-soft);
+  color:var(--accent-bright);display:inline-flex;align-items:center;justify-content:center}
+.ob-ico svg{width:19px;height:19px}
 
 /* Help dialog */
 #help-dialog{max-width:480px}
@@ -532,9 +552,12 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
       </div>
       <table class="standings">
         <thead><tr>
-          <th class="rank">#</th><th>Deck</th>
-          <th class="num">Wins</th><th class="num">Losses</th><th class="num">Spiele</th>
-          <th class="num">Winrate</th>
+          <th class="rank sortable" data-sort="rank" title="Ladder-Rang (Siege zuerst)">#</th>
+          <th class="sortable" data-sort="deck">Deck</th>
+          <th class="num sortable" data-sort="w">Wins</th>
+          <th class="num sortable" data-sort="l">Losses</th>
+          <th class="num sortable" data-sort="diff" title="Differenz: Siege minus Niederlagen">+/−</th>
+          <th class="num sortable" data-sort="wr">Winrate</th>
         </tr></thead>
         <tbody id="standings-body"></tbody>
       </table>
@@ -576,7 +599,10 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
 
   <section id="cross" class="section">
     <div class="card cross-desktop" style="padding:12px">
-      <h2 style="margin-bottom:10px">Crosstable</h2>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px">
+        <h2 style="margin:0;border:0;padding:0">Crosstable</h2>
+        <button class="btn ghost small" id="cross-density-btn" type="button" title="Zelldichte umschalten">Kompakt</button>
+      </div>
       <p class="help" style="margin:0 0 10px 4px"><b style="color:var(--win)">✓ Sieg</b> · <b style="color:var(--loss)">✗ Niederlage</b> — Klick auf eine Zelle: leer → Sieg → Niederlage → leer. Zeile = Deck, Spalte = Gegner. Spiegelzelle wird automatisch gesetzt. Rechtsklick öffnet Dialog.</p>
       <div class="cross-wrap" id="cross-wrap"></div>
     </div>
@@ -617,6 +643,18 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
   <div class="dlg-body">
     <input id="palette-input" type="text" placeholder="Befehl oder Deck suchen…" autocomplete="off" spellcheck="false">
     <div id="palette-list"></div>
+  </div>
+</dialog>
+
+<dialog id="onboard-dialog">
+  <div class="dlg-body">
+    <h3>Willkommen bei Duel Ladder</h3>
+    <div class="onboard-step"><span class="ob-ico" data-icon="swords"></span><div><b>Ergebnisse eintragen</b><div class="help" style="margin-top:2px">Klick auf eine Crosstable-Zelle (leer → ✓ → ✗) oder nutze den Tab „Ergebnis" mit Schnellsuche.</div></div></div>
+    <div class="onboard-step"><span class="ob-ico" data-icon="keyboard"></span><div><b>Schnell navigieren</b><div class="help" style="margin-top:2px">Drücke <kbd>Strg</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd> für die Befehls- und Deck-Suche. <kbd>?</kbd> zeigt alle Tastenkürzel.</div></div></div>
+    <div class="onboard-step"><span class="ob-ico" data-icon="cloud-upload"></span><div><b>Geräteübergreifend speichern</b><div class="help" style="margin-top:2px">Im Menü (▾) anmelden — dann wird dein Stand automatisch zu GitHub gesichert und auf anderen Geräten geladen.</div></div></div>
+  </div>
+  <div class="dlg-actions">
+    <button class="btn gold" id="onboard-done" type="button">Los geht's</button>
   </div>
 </dialog>
 
@@ -1009,41 +1047,101 @@ document.querySelectorAll('nav button').forEach(b=>{
 document.body.dataset.activeTab = 'standings';
 
 /* ---------- Standings ---------- */
+// Canonical ladder order: wins, then WR, then fewer losses, then name
+function canonicalCompare(a,b){ return b.w-a.w || b.wr-a.wr || a.l-b.l || a.name.localeCompare(b.name); }
+let standingsSort = {key:'rank', dir:'asc'};  // rank=canonical ladder order
+
 function renderStandings(){
   const search=(document.getElementById('standings-search').value||'').toLowerCase();
   const playedOnly=document.getElementById('standings-played-only').checked;
-  const rows=state.decks.map((d,i)=>({name:d,i,...stats(i)}));
-  // sort by most wins, then WR desc, then fewer losses, then name
-  rows.sort((a,b)=> b.w-a.w || b.wr-a.wr || a.l-b.l || a.name.localeCompare(b.name));
+  const all=state.decks.map((d,i)=>({name:d,i,...stats(i),diff:stats(i).w-stats(i).l}));
+
+  // Canonical rank (stable, wins-first) — drives the # column and medals
+  const byCanon=[...all].sort(canonicalCompare);
+  const rankOf=new Map();
+  byCanon.forEach((r,idx)=>rankOf.set(r.i, idx+1));
+
+  // Display order = chosen sort
+  const {key,dir}=standingsSort;
+  const mul=dir==='asc'?1:-1;
+  const cmp={
+    rank:(a,b)=>canonicalCompare(a,b),
+    deck:(a,b)=>a.name.localeCompare(b.name),
+    w:(a,b)=>a.w-b.w,
+    l:(a,b)=>a.l-b.l,
+    diff:(a,b)=>a.diff-b.diff,
+    wr:(a,b)=>a.wr-b.wr || a.w-b.w,
+  }[key]||((a,b)=>canonicalCompare(a,b));
+  const rows=[...all].sort((a,b)=> (key==='rank'? cmp(a,b) : (mul*cmp(a,b)) || canonicalCompare(a,b)));
+
+  const visible=rows.filter(r=>!playedOnly||r.g>0).filter(r=>!search||r.name.toLowerCase().includes(search));
   const tbody=document.getElementById('standings-body');
   let html='';
-  let rank=0;
-  // Determine medal positions among ranked rows (with games > 0)
-  const ranked = rows.filter(r=>!playedOnly||r.g>0).filter(r=>!search||r.name.toLowerCase().includes(search));
-  for(const r of ranked){
-    rank++;
+  for(const r of visible){
+    const rank=rankOf.get(r.i);
     const wrPct=(r.wr*100).toFixed(1);
-    let cls='';
-    let medal='';
-    if(rank===1 && r.g>0){ cls='gold'; medal='<span class="medal gold"></span>'; }
-    else if(rank===2 && r.g>0){ cls='silver'; medal='<span class="medal silver"></span>'; }
-    else if(rank===3 && r.g>0){ cls='bronze'; medal='<span class="medal bronze"></span>'; }
-    html+='<tr class="'+cls+'" data-deck-i="'+r.i+'"><td class="rank">'+(medal||rank)+'</td>'+
+    let cls='', medal='', rankCell=rank;
+    if(rank===1 && r.g>0){ cls='gold'; rankCell='<span class="medal gold"></span>'; }
+    else if(rank===2 && r.g>0){ cls='silver'; rankCell='<span class="medal silver"></span>'; }
+    else if(rank===3 && r.g>0){ cls='bronze'; rankCell='<span class="medal bronze"></span>'; }
+    const diffStr=r.g? (r.diff>0?'+'+r.diff:''+r.diff) : '—';
+    const diffCol=r.diff>0?'var(--win)':r.diff<0?'var(--loss)':'var(--muted)';
+    html+='<tr class="'+cls+'" data-deck-i="'+r.i+'"><td class="rank">'+rankCell+'</td>'+
       '<td class="deck">'+escapeHtml(r.name)+'</td>'+
       '<td class="num">'+r.w+'</td>'+
       '<td class="num">'+r.l+'</td>'+
-      '<td class="num">'+r.g+'</td>'+
+      '<td class="num" style="color:'+(r.g?diffCol:'var(--muted)')+'">'+diffStr+'</td>'+
       '<td class="num"><span class="wr-bar"><span style="width:'+wrPct+'%"></span></span>'+(r.g?wrPct+'%':'—')+'</td></tr>';
   }
-  tbody.innerHTML=html || '<tr><td colspan="6" class="muted">Keine Decks gefunden</td></tr>';
+  if(!visible.length){
+    const msg = state.decks.length===0
+      ? 'Noch keine Decks — füge im Tab „Decks" eins hinzu.'
+      : 'Keine Decks gefunden.';
+    html='<tr><td colspan="6" class="muted" style="text-align:center;padding:28px">'+msg+'</td></tr>';
+  }
+  tbody.innerHTML=html;
   document.getElementById('deck-count').textContent=state.decks.length+' Decks';
+  // header sort indicators
+  document.querySelectorAll('table.standings th.sortable').forEach(th=>{
+    th.classList.toggle('sort-active', th.dataset.sort===key);
+    th.dataset.dir = th.dataset.sort===key ? dir : '';
+  });
+}
+function setStandingsSort(key){
+  if(standingsSort.key===key){
+    standingsSort.dir = standingsSort.dir==='asc'?'desc':'asc';
+  } else {
+    standingsSort.key=key;
+    // sensible default direction per column
+    standingsSort.dir = (key==='deck'||key==='rank'||key==='l') ? 'asc' : 'desc';
+  }
+  renderStandings();
 }
 document.getElementById('standings-search').addEventListener('input',renderStandings);
 document.getElementById('standings-played-only').addEventListener('change',renderStandings);
+document.querySelector('table.standings thead').addEventListener('click', e=>{
+  const th=e.target.closest('th.sortable');
+  if(th) setStandingsSort(th.dataset.sort);
+});
 document.getElementById('standings-body').addEventListener('click', e=>{
   const tr = e.target.closest('tr[data-deck-i]');
   if(!tr) return;
   openDeckDetail(+tr.dataset.deckI);
+});
+
+/* ---------- Crosstable density ---------- */
+const DENSITY_KEY = 'ygo-density-v1';
+let crossCompact = localStorage.getItem(DENSITY_KEY) === '1';
+function applyDensity(){
+  const wrap = document.getElementById('cross-wrap');
+  const btn = document.getElementById('cross-density-btn');
+  if(wrap) wrap.classList.toggle('compact', crossCompact);
+  if(btn) btn.textContent = crossCompact ? 'Komfortabel' : 'Kompakt';
+}
+document.getElementById('cross-density-btn').addEventListener('click', ()=>{
+  crossCompact = !crossCompact;
+  localStorage.setItem(DENSITY_KEY, crossCompact ? '1' : '0');
+  applyDensity();
 });
 
 /* ---------- Enter ---------- */
@@ -2442,9 +2540,24 @@ window.addEventListener('beforeunload', e => {
   }
 });
 
+/* First-run onboarding (shown once) */
+const ONBOARD_KEY = 'ygo-onboarded-v1';
+document.getElementById('onboard-done').addEventListener('click', ()=>{
+  localStorage.setItem(ONBOARD_KEY, '1');
+  document.getElementById('onboard-dialog').close();
+});
+function maybeShowOnboarding(){
+  if(localStorage.getItem(ONBOARD_KEY)) return;
+  const dlg = document.getElementById('onboard-dialog');
+  dlg.addEventListener('close', ()=>localStorage.setItem(ONBOARD_KEY,'1'), {once:true});
+  dlg.showModal();
+}
+
 hydrateIcons();
 applyTheme();
+applyDensity();
 renderAll();
+maybeShowOnboarding();
 // On startup, try to pull from GitHub if no local edits
 if(!dirty && cfg.owner && cfg.repo){
   pullFromGitHub({silent:true}).catch(()=>{});
