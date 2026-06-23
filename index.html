@@ -208,8 +208,8 @@ table.cross tbody th{position:sticky;left:0;background:var(--surface-2);z-index:
 table.cross td{cursor:pointer;user-select:none;color:var(--text);transition:filter .1s}
 table.cross td.diag{background:var(--bg);color:var(--border-strong);cursor:default;
   background-image:linear-gradient(135deg,transparent 46%,var(--accent-soft) 50%,transparent 54%)}
-table.cross td.win{background:var(--win);color:#04241a;font-weight:700}
-table.cross td.loss{background:var(--loss);color:#2b0908;font-weight:700}
+table.cross td.win{background:var(--win);color:#04241a;font-weight:700;font-size:13px}
+table.cross td.loss{background:var(--loss);color:#2b0908;font-weight:700;font-size:13px}
 table.cross td.empty:hover{background:var(--accent-soft)}
 table.cross td.win:hover,table.cross td.loss:hover{filter:brightness(1.08)}
 
@@ -577,7 +577,7 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
   <section id="cross" class="section">
     <div class="card cross-desktop" style="padding:12px">
       <h2 style="margin-bottom:10px">Crosstable</h2>
-      <p class="help" style="margin:0 0 10px 4px">Klick auf eine Zelle: leer → Sieg → Niederlage → leer. Zeile = Deck, Spalte = Gegner. Spiegelzelle wird automatisch gesetzt. Rechtsklick öffnet Dialog.</p>
+      <p class="help" style="margin:0 0 10px 4px"><b style="color:var(--win)">✓ Sieg</b> · <b style="color:var(--loss)">✗ Niederlage</b> — Klick auf eine Zelle: leer → Sieg → Niederlage → leer. Zeile = Deck, Spalte = Gegner. Spiegelzelle wird automatisch gesetzt. Rechtsklick öffnet Dialog.</p>
       <div class="cross-wrap" id="cross-wrap"></div>
     </div>
     <div class="card cross-mobile">
@@ -1336,7 +1336,7 @@ function renderCross(){
       if(i===j){ html+='<td class="diag" data-i="'+i+'" data-j="'+j+'">—</td>'; continue; }
       const v=state.matrix[i][j];
       const cls=v===1?'win':v===0?'loss':'empty';
-      const txt=v===1?'1':v===0?'0':'';
+      const txt=v===1?'✓':v===0?'✗':'';
       html+='<td class="'+cls+'" data-i="'+i+'" data-j="'+j+'">'+txt+'</td>';
     }
     html+='</tr>';
@@ -1536,7 +1536,7 @@ function renderDeckMatchupsList(){
   }
   list.innerHTML = items.map(it=>{
     const cls = it.v===1?'win':it.v===0?'loss':'empty';
-    const lbl = it.v===1?'Sieg':it.v===0?'Niederl.':'offen';
+    const lbl = it.v===1?'✓ Sieg':it.v===0?'✗ Niederl.':'offen';
     return '<button type="button" class="deck-match-row '+cls+'" data-j="'+it.j+'">'+
       '<span class="dmr-name">'+escapeHtml(it.d)+'</span>'+
       '<span class="dmr-result">'+lbl+'</span>'+
@@ -2107,7 +2107,7 @@ function renderCrossMobile(){
     html+='<div class="m-match-list">';
     for(const it of items){
       const cls=it.v===1?'win':it.v===0?'loss':'empty';
-      const label=it.v===1?'Sieg':it.v===0?'Niederl.':'offen';
+      const label=it.v===1?'✓ Sieg':it.v===0?'✗ Niederl.':'offen';
       html+='<button type="button" class="m-match '+cls+'" data-i="'+i+'" data-j="'+it.j+'">'+
         '<span class="m-match-name">'+escapeHtml(it.d)+'</span>'+
         '<span class="m-match-result">'+label+'</span>'+
