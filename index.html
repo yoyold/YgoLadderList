@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Duel Ladder</title>
+<script>(function(){try{var p=localStorage.getItem('ygo-theme-v1')||'auto';if(p==='light'||(p==='auto'&&matchMedia('(prefers-color-scheme: light)').matches))document.documentElement.classList.add('theme-light');}catch(e){}})();</script>
 <link rel="stylesheet" href="assets/fonts.css">
 <style>
 :root{
@@ -33,6 +34,18 @@
   --gold:var(--accent); --gold-2:var(--accent-bright); --gold-3:var(--accent-dim);
   --win-2:var(--win); --loss-2:var(--loss);
   --silver:var(--medal-silver); --bronze:var(--medal-bronze); --crimson:#7c1a1a;
+}
+/* Light palette — only base tokens overridden; aliases re-resolve via var() */
+:root.theme-light{
+  color-scheme:light;
+  --bg:#f5f5f8; --surface:#ffffff; --surface-2:#f0f0f4; --surface-3:#e6e6ec;
+  --border:#e4e4ea; --border-strong:#d2d2dc;
+  --text:#191920; --text-dim:#45454f; --muted:#6b6b76;
+  --accent:#7c3aed; --accent-bright:#6d28d9; --accent-dim:#6d28d9;
+  --accent-soft:rgba(124,58,237,.10); --accent-line:rgba(124,58,237,.4);
+  --win:#0f9d76; --win-soft:rgba(15,157,118,.13);
+  --loss:#dc4d47; --loss-soft:rgba(220,77,71,.12);
+  --shadow:0 16px 40px -12px rgba(20,20,45,.18); --shadow-sm:0 4px 16px -6px rgba(20,20,45,.14);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0;color:var(--text);font:14px/1.55 var(--font);
@@ -493,6 +506,7 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
       <hr>
       <button type="button" data-act="login" role="menuitem"><span class="ico" data-icon="key-round"></span><span class="lbl" id="menu-login-label">Anmelden / Token verwalten</span></button>
       <button type="button" data-act="toggle-autosave" role="menuitemcheckbox"><span class="ico" data-icon="timer"></span><span class="lbl" id="menu-autosave-label">Auto-Speichern: An</span><span class="check-mark">✓</span></button>
+      <button type="button" data-act="cycle-theme" role="menuitem"><span class="ico" id="menu-theme-ico" data-icon="monitor"></span><span class="lbl" id="menu-theme-label">Erscheinungsbild: System</span></button>
       <hr>
       <button type="button" data-act="import" role="menuitem"><span class="ico" data-icon="upload"></span><span class="lbl">Excel importieren</span></button>
       <button type="button" data-act="export" role="menuitem"><span class="ico" data-icon="download"></span><span class="lbl">Excel exportieren</span></button>
@@ -1964,12 +1978,14 @@ document.addEventListener('keydown', e=>{
 headerMenu.addEventListener('click', e=>{
   const btn = e.target.closest('button[data-act]');
   if(!btn || btn.disabled) return;
-  setMenuOpen(false);
   const act = btn.dataset.act;
+  // toggles keep the menu open so you can adjust them in place
+  if(act!=='toggle-autosave' && act!=='cycle-theme') setMenuOpen(false);
   if(act==='pull') pullFromGitHub({silent:false});
   else if(act==='discard') resetLocal();
   else if(act==='login') openLoginDialog();
   else if(act==='toggle-autosave') setAutoSave(!autoSaveEnabled);
+  else if(act==='cycle-theme') cycleTheme();
   else if(act==='import') document.getElementById('file-input').click();
   else if(act==='export') exportXlsx();
   else if(act==='help') openHelp();
@@ -2002,7 +2018,10 @@ const ICONS = {
   'grid':'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/>',
   'layers':'<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
   'diamond':'<path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41L13.7 2.71a2.41 2.41 0 0 0-3.41 0z"/>',
-  'plus':'<path d="M5 12h14"/><path d="M12 5v14"/>'
+  'plus':'<path d="M5 12h14"/><path d="M12 5v14"/>',
+  'sun':'<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/>',
+  'moon':'<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  'monitor':'<rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/>'
 };
 function svgIcon(name){
   const body = ICONS[name];
@@ -2016,6 +2035,36 @@ function hydrateIcons(root){
     if(name && ICONS[name]) el.innerHTML = svgIcon(name);
   });
 }
+
+/* ---------- Theme (auto / light / dark) ---------- */
+const THEME_KEY = 'ygo-theme-v1';
+let themePref = localStorage.getItem(THEME_KEY) || 'auto';  // auto | light | dark
+const themeMedia = window.matchMedia('(prefers-color-scheme: light)');
+
+function effectiveTheme(){
+  if(themePref === 'light' || themePref === 'dark') return themePref;
+  return themeMedia.matches ? 'light' : 'dark';
+}
+function applyTheme(){
+  const eff = effectiveTheme();
+  document.documentElement.classList.toggle('theme-light', eff === 'light');
+  // mobile browser chrome color
+  let meta = document.querySelector('meta[name="theme-color"]');
+  if(!meta){ meta = document.createElement('meta'); meta.name = 'theme-color'; document.head.appendChild(meta); }
+  meta.content = eff === 'light' ? '#ffffff' : '#16161c';
+  // menu label + icon
+  const label = document.getElementById('menu-theme-label');
+  const ico = document.getElementById('menu-theme-ico');
+  const map = {auto:['System','monitor'], light:['Hell','sun'], dark:['Dunkel','moon']};
+  if(label) label.textContent = 'Erscheinungsbild: ' + map[themePref][0];
+  if(ico) ico.innerHTML = svgIcon(map[themePref][1]);
+}
+function cycleTheme(){
+  themePref = themePref === 'auto' ? 'light' : themePref === 'light' ? 'dark' : 'auto';
+  localStorage.setItem(THEME_KEY, themePref);
+  applyTheme();
+}
+themeMedia.addEventListener('change', ()=>{ if(themePref === 'auto') applyTheme(); });
 
 function renderCrossMobile(){
   const sel=document.getElementById('cross-mobile-deck');
@@ -2394,6 +2443,7 @@ window.addEventListener('beforeunload', e => {
 });
 
 hydrateIcons();
+applyTheme();
 renderAll();
 // On startup, try to pull from GitHub if no local edits
 if(!dirty && cfg.owner && cfg.repo){
