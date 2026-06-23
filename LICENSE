@@ -27,8 +27,8 @@ Third-party assets bundled in this repository keep their original licenses:
 - SheetJS Community Edition (assets/xlsx.full.min.js)
   Apache License 2.0 — https://github.com/SheetJS/sheetjs
 
-- Cinzel typeface (assets/fonts/8vIJ7ww63mVu7gt79mT7.woff2)
-  SIL Open Font License 1.1 — https://fonts.google.com/specimen/Cinzel
-
 - Inter typeface (assets/fonts/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7.woff2)
   SIL Open Font License 1.1 — https://fonts.google.com/specimen/Inter
+
+- Lucide icons (inline SVG paths in index.html)
+  ISC License — https://github.com/lucide-icons/lucide

@@ -486,19 +486,19 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
     <button class="sync-btn" id="sync-btn" type="button">
       <span class="ico"></span><span class="lbl"></span>
     </button>
-    <button class="menu-btn" id="menu-btn" type="button" aria-label="Weitere Aktionen" aria-haspopup="true" aria-expanded="false">▾</button>
+    <button class="menu-btn" id="menu-btn" type="button" aria-label="Weitere Aktionen" aria-haspopup="true" aria-expanded="false" data-icon="chevron-down"></button>
     <div class="header-menu" id="header-menu" role="menu">
-      <button type="button" data-act="pull" role="menuitem"><span class="ico">⤓</span><span class="lbl">Aus GitHub neu laden</span><kbd>R</kbd></button>
-      <button type="button" data-act="discard" role="menuitem" class="danger"><span class="ico">↺</span><span class="lbl">Lokale Änderungen verwerfen</span></button>
+      <button type="button" data-act="pull" role="menuitem"><span class="ico" data-icon="cloud-download"></span><span class="lbl">Aus GitHub neu laden</span><kbd>R</kbd></button>
+      <button type="button" data-act="discard" role="menuitem" class="danger"><span class="ico" data-icon="rotate-ccw"></span><span class="lbl">Lokale Änderungen verwerfen</span></button>
       <hr>
-      <button type="button" data-act="login" role="menuitem"><span class="ico">⚿</span><span class="lbl" id="menu-login-label">Anmelden / Token verwalten</span></button>
-      <button type="button" data-act="toggle-autosave" role="menuitemcheckbox"><span class="ico">⏱</span><span class="lbl" id="menu-autosave-label">Auto-Speichern: An</span><span class="check-mark">✓</span></button>
+      <button type="button" data-act="login" role="menuitem"><span class="ico" data-icon="key-round"></span><span class="lbl" id="menu-login-label">Anmelden / Token verwalten</span></button>
+      <button type="button" data-act="toggle-autosave" role="menuitemcheckbox"><span class="ico" data-icon="timer"></span><span class="lbl" id="menu-autosave-label">Auto-Speichern: An</span><span class="check-mark">✓</span></button>
       <hr>
-      <button type="button" data-act="import" role="menuitem"><span class="ico">⇧</span><span class="lbl">Excel importieren</span></button>
-      <button type="button" data-act="export" role="menuitem"><span class="ico">⇩</span><span class="lbl">Excel exportieren</span></button>
+      <button type="button" data-act="import" role="menuitem"><span class="ico" data-icon="upload"></span><span class="lbl">Excel importieren</span></button>
+      <button type="button" data-act="export" role="menuitem"><span class="ico" data-icon="download"></span><span class="lbl">Excel exportieren</span></button>
       <hr>
-      <button type="button" data-act="help" role="menuitem"><span class="ico">?</span><span class="lbl">Tastenkürzel</span><kbd>?</kbd></button>
-      <button type="button" data-act="privacy" role="menuitem"><span class="ico">🛡</span><span class="lbl">Datenschutz</span></button>
+      <button type="button" data-act="help" role="menuitem"><span class="ico" data-icon="keyboard"></span><span class="lbl">Tastenkürzel</span><kbd>?</kbd></button>
+      <button type="button" data-act="privacy" role="menuitem"><span class="ico" data-icon="shield"></span><span class="lbl">Datenschutz</span></button>
     </div>
   </div>
 </header>
@@ -535,7 +535,7 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
           <input id="enter-winner-input" class="combo-input" placeholder="Sieger…" autocomplete="off" spellcheck="false">
           <div class="combo-list" id="enter-winner-list" hidden></div>
         </div>
-        <button class="btn ghost swap-btn" id="swap-btn" type="button" title="Sieger/Verlierer tauschen" aria-label="Sieger und Verlierer tauschen">⇄</button>
+        <button class="btn ghost swap-btn" id="swap-btn" type="button" title="Sieger/Verlierer tauschen" aria-label="Sieger und Verlierer tauschen" data-icon="arrow-left-right"></button>
         <div class="combobox">
           <input id="enter-loser-input" class="combo-input" placeholder="Verlierer…" autocomplete="off" spellcheck="false">
           <div class="combo-list" id="enter-loser-list" hidden></div>
@@ -597,7 +597,7 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
   </section>
 </main>
 
-<button id="fab" class="fab" type="button" aria-label="Neues Match-Ergebnis" title="Neues Match (N)">⚔</button>
+<button id="fab" class="fab" type="button" aria-label="Neues Match-Ergebnis" title="Neues Match (N)" data-icon="swords"></button>
 
 <dialog id="palette-dialog">
   <div class="dlg-body">
@@ -658,7 +658,7 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
   <div class="dlg-body">
     <div class="deck-title-row">
       <h3 id="deck-name"></h3>
-      <button class="btn ghost icon-btn" id="deck-rename-btn" type="button" title="Umbenennen" aria-label="Umbenennen">✎</button>
+      <button class="btn ghost icon-btn" id="deck-rename-btn" type="button" title="Umbenennen" aria-label="Umbenennen" data-icon="pencil"></button>
     </div>
     <div id="deck-summary"></div>
     <div id="deck-highlights"></div>
@@ -1650,15 +1650,15 @@ function updateStatusUI(){
   let ico='', lbl='', sub='', tip='';
   switch(st){
     case 'loggedout':
-      ico='⚿'; lbl='Anmelden';
+      ico='key-round'; lbl='Anmelden';
       tip='Mit GitHub anmelden, um Änderungen zu speichern';
       break;
     case 'synced':
-      ico='✓'; lbl='Synchron';
+      ico='check'; lbl='Synchron';
       tip='Stand mit GitHub abgeglichen'+(lastSyncedAt?' · '+relativeTime(lastSyncedAt):'')+' · Klick: neu laden';
       break;
     case 'dirty':
-      ico='⤒'; lbl='Speichern';
+      ico='cloud-upload'; lbl='Speichern';
       if(autoSaveTimer && autoSaveFiresAt){
         const secs = Math.max(1, Math.ceil((autoSaveFiresAt - Date.now())/1000));
         sub = 'Auto in '+secs+'s';
@@ -1671,15 +1671,15 @@ function updateStatusUI(){
       }
       break;
     case 'loading':
-      ico='↻'; lbl='Speichert…';
+      ico='refresh-cw'; lbl='Speichert…';
       tip='Synchronisation läuft';
       break;
     case 'error':
-      ico='!'; lbl='Fehler';
+      ico='alert-triangle'; lbl='Fehler';
       tip=lastError+' · Klick zum erneuten Versuch';
       break;
   }
-  btn.querySelector('.ico').textContent = ico;
+  btn.querySelector('.ico').innerHTML = svgIcon(ico);
   let labelHtml = escapeHtml(lbl);
   if(sub) labelHtml += '<span class="sub">'+escapeHtml(sub)+'</span>';
   btn.querySelector('.lbl').innerHTML = labelHtml;
@@ -1852,7 +1852,7 @@ async function pushToGitHub({silent}={}){
         // Conflict: never auto-overwrite silently; ask in manual mode
         if(silent){
           saving=false; lastError='Konflikt: GitHub hat eine neuere Version'; updateStatusUI();
-          showToast({label:'Auto-Speichern pausiert: GitHub hat eine neuere Version. ⤓ Sync drücken oder manuell speichern.', duration:6000});
+          showToast({label:'Auto-Speichern pausiert: GitHub hat eine neuere Version. Bitte neu laden (Menü) oder manuell speichern.', duration:6000});
           return;
         }
         if(!confirm('Auf GitHub liegt eine neuere Version vor. Mit lokalen Änderungen überschreiben?')){
@@ -1980,6 +1980,43 @@ headerMenu.addEventListener('click', e=>{
 function escapeHtml(s){return (s==null?'':String(s)).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);}
 function escapeAttr(s){return escapeHtml(s);}
 
+/* ---------- Inline SVG icons (Lucide, MIT — fully self-hosted) ---------- */
+const ICONS = {
+  'swords':'<polyline points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"/><line x1="13" x2="19" y1="19" y2="13"/><line x1="16" x2="20" y1="16" y2="20"/><line x1="19" x2="21" y1="21" y2="19"/><polyline points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"/><line x1="5" x2="9" y1="14" y2="18"/><line x1="7" x2="4" y1="17" y2="20"/><line x1="3" x2="5" y1="19" y2="21"/>',
+  'cloud-download':'<path d="M8 17a5 5 0 0 1-.916-9.916 5.002 5.002 0 0 1 9.832 0A5 5 0 0 1 16 17"/><path d="M12 12v9"/><path d="m8 17 4 4 4-4"/>',
+  'cloud-upload':'<path d="M8 17a5 5 0 0 1-.916-9.916 5.002 5.002 0 0 1 9.832 0A5 5 0 0 1 16 17"/><path d="M12 21v-9"/><path d="m16 16-4-4-4 4"/>',
+  'download':'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+  'upload':'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+  'refresh-cw':'<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>',
+  'rotate-ccw':'<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+  'key-round':'<path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>',
+  'timer':'<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
+  'keyboard':'<path d="M10 8h.01"/><path d="M12 12h.01"/><path d="M14 8h.01"/><path d="M16 12h.01"/><path d="M18 8h.01"/><path d="M6 8h.01"/><path d="M7 16h10"/><path d="M8 12h.01"/><rect width="20" height="16" x="2" y="4" rx="2"/>',
+  'shield':'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  'chevron-down':'<path d="m6 9 6 6 6-6"/>',
+  'alert-triangle':'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  'arrow-left-right':'<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>',
+  'pencil':'<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/>',
+  'check':'<path d="M20 6 9 17l-4-4"/>',
+  'trophy':'<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>',
+  'grid':'<rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M9 3v18"/><path d="M15 3v18"/>',
+  'layers':'<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/>',
+  'diamond':'<path d="M2.7 10.3a2.41 2.41 0 0 0 0 3.41l7.59 7.59a2.41 2.41 0 0 0 3.41 0l7.59-7.59a2.41 2.41 0 0 0 0-3.41L13.7 2.71a2.41 2.41 0 0 0-3.41 0z"/>',
+  'plus':'<path d="M5 12h14"/><path d="M12 5v14"/>'
+};
+function svgIcon(name){
+  const body = ICONS[name];
+  if(!body) return '';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" '+
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+body+'</svg>';
+}
+function hydrateIcons(root){
+  (root||document).querySelectorAll('[data-icon]').forEach(el=>{
+    const name = el.dataset.icon;
+    if(name && ICONS[name]) el.innerHTML = svgIcon(name);
+  });
+}
+
 function renderCrossMobile(){
   const sel=document.getElementById('cross-mobile-deck');
   if(!sel) return;
@@ -2088,21 +2125,21 @@ function openPalette(){
 
 function buildPaletteCommands(){
   return [
-    {label:'Neues Match-Ergebnis', kbd:'N', ico:'⚔', kind:'cmd',
+    {label:'Neues Match-Ergebnis', kbd:'N', ico:'swords', kind:'cmd',
       action:()=>{ switchTab('enter'); setTimeout(()=>document.getElementById('enter-winner-input').focus(),50); }},
-    {label:'Von GitHub laden', kbd:'R', ico:'⤓', kind:'cmd',
+    {label:'Von GitHub laden', kbd:'R', ico:'cloud-download', kind:'cmd',
       action:()=>pullFromGitHub({silent:false})},
-    {label:'Zu GitHub speichern', kbd:'S', ico:'⤒', kind:'cmd',
+    {label:'Zu GitHub speichern', kbd:'S', ico:'cloud-upload', kind:'cmd',
       action:()=>pushToGitHub()},
-    {label:'xlsx exportieren', ico:'⇩', kind:'cmd', action:exportXlsx},
-    {label:'xlsx importieren', ico:'⇧', kind:'cmd',
+    {label:'xlsx exportieren', ico:'download', kind:'cmd', action:exportXlsx},
+    {label:'xlsx importieren', ico:'upload', kind:'cmd',
       action:()=>document.getElementById('file-input').click()},
-    {label:'Anmelden / Token verwalten', ico:'⚿', kind:'cmd',
+    {label:'Anmelden / Token verwalten', ico:'key-round', kind:'cmd',
       action:()=>openLoginDialog()},
-    {label:'Tabelle anzeigen', ico:'☰', kind:'cmd', action:()=>switchTab('standings')},
-    {label:'Crosstable anzeigen', ico:'▦', kind:'cmd', action:()=>switchTab('cross')},
-    {label:'Decks verwalten', ico:'✚', kind:'cmd', action:()=>switchTab('manage')},
-    {label:'Tastenkürzel', kbd:'?', ico:'?', kind:'cmd', action:openHelp},
+    {label:'Tabelle anzeigen', ico:'trophy', kind:'cmd', action:()=>switchTab('standings')},
+    {label:'Crosstable anzeigen', ico:'grid', kind:'cmd', action:()=>switchTab('cross')},
+    {label:'Decks verwalten', ico:'layers', kind:'cmd', action:()=>switchTab('manage')},
+    {label:'Tastenkürzel', kbd:'?', ico:'keyboard', kind:'cmd', action:openHelp},
   ];
 }
 
@@ -2110,7 +2147,7 @@ function renderPalette(query){
   const q = query.trim().toLowerCase();
   const cmds = buildPaletteCommands();
   const cmdMatches = q ? cmds.filter(c=>c.label.toLowerCase().includes(q)) : cmds;
-  const deckMatches = state.decks.map((d,i)=>({label:d, i, kind:'deck', ico:'◆',
+  const deckMatches = state.decks.map((d,i)=>({label:d, i, kind:'deck', ico:'diamond',
     action:()=>openDeckDetail(i)}))
     .filter(d=>!q || d.label.toLowerCase().includes(q))
     .sort((a,b)=>a.label.localeCompare(b.label));
@@ -2149,7 +2186,7 @@ function paletteItemHtml(it, idx, q){
   const lbl = q ? highlightQuery(it.label, q) : escapeHtml(it.label);
   const kbd = it.kbd ? '<kbd>'+escapeHtml(it.kbd)+'</kbd>' : '';
   return '<div class="palette-item" data-idx="'+idx+'">'+
-    '<span class="ico">'+(it.ico||'')+'</span>'+
+    '<span class="ico">'+svgIcon(it.ico)+'</span>'+
     '<span class="lbl">'+lbl+'</span>'+kbd+'</div>';
 }
 
@@ -2356,6 +2393,7 @@ window.addEventListener('beforeunload', e => {
   }
 });
 
+hydrateIcons();
 renderAll();
 // On startup, try to pull from GitHub if no local edits
 if(!dirty && cfg.owner && cfg.repo){
