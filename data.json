@@ -76,7 +76,8 @@
     "Lumis & Umbra Mask",
     "Siegfried",
     "Simorgh Wind",
-    "Masked Hero"
+    "Masked Hero",
+    "Ruin / Demise"
   ],
   "matrix": [
     [
@@ -156,6 +157,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -189,6 +191,7 @@
       null,
       null,
       1,
+      null,
       null,
       null,
       null,
@@ -314,6 +317,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -336,6 +340,7 @@
       null,
       null,
       1,
+      null,
       null,
       null,
       null,
@@ -472,6 +477,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -494,6 +500,7 @@
       0,
       null,
       0,
+      null,
       null,
       null,
       null,
@@ -630,6 +637,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -709,6 +717,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -740,6 +749,7 @@
       null,
       null,
       1,
+      null,
       null,
       null,
       null,
@@ -867,6 +877,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -896,6 +907,7 @@
       null,
       null,
       0,
+      null,
       null,
       null,
       null,
@@ -1025,6 +1037,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -1104,6 +1117,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -1137,6 +1151,7 @@
       null,
       null,
       0,
+      null,
       null,
       null,
       null,
@@ -1262,6 +1277,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -1293,6 +1309,7 @@
       null,
       null,
       1,
+      null,
       null,
       null,
       null,
@@ -1420,6 +1437,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -1499,6 +1517,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -1529,6 +1548,7 @@
       null,
       null,
       1,
+      null,
       null,
       null,
       null,
@@ -1657,6 +1677,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -1682,6 +1703,7 @@
       null,
       null,
       1,
+      null,
       null,
       null,
       null,
@@ -1815,6 +1837,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -1894,6 +1917,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -1917,6 +1941,7 @@
       null,
       null,
       0,
+      null,
       null,
       null,
       null,
@@ -2052,6 +2077,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -2084,6 +2110,7 @@
       null,
       null,
       0,
+      null,
       null,
       null,
       null,
@@ -2210,6 +2237,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -2289,6 +2317,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -2318,6 +2347,7 @@
       null,
       0,
       1,
+      null,
       null,
       null,
       null,
@@ -2447,6 +2477,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -2482,6 +2513,7 @@
       null,
       null,
       0,
+      null,
       null,
       null,
       null,
@@ -2605,6 +2637,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -2684,6 +2717,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -2719,6 +2753,7 @@
       null,
       null,
       1,
+      null,
       null,
       null,
       null,
@@ -2842,9 +2877,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -3000,6 +3037,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -3079,6 +3117,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -3117,6 +3156,7 @@
       null,
       null,
       1,
+      null,
       null,
       null,
       null,
@@ -3237,9 +3277,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -3395,9 +3437,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -3553,6 +3597,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -3614,6 +3659,7 @@
       null,
       null,
       1,
+      null,
       null,
       null,
       null,
@@ -3711,6 +3757,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -3790,6 +3837,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -3866,6 +3914,7 @@
       null,
       null,
       1,
+      null,
       null,
       null,
       null,
@@ -3948,6 +3997,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -4017,6 +4067,7 @@
       null,
       null,
       0,
+      null,
       null,
       null,
       null,
@@ -4106,6 +4157,7 @@
       null,
       null,
       0,
+      null,
       null
     ],
     [
@@ -4185,9 +4237,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -4343,9 +4397,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -4501,6 +4557,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -4580,6 +4637,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -4628,6 +4686,7 @@
       null,
       null,
       0,
+      null,
       null,
       null,
       null,
@@ -4738,9 +4797,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -4896,6 +4957,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -4975,9 +5037,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -5133,9 +5197,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -5291,6 +5357,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -5370,9 +5437,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -5528,9 +5597,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -5686,6 +5757,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -5765,6 +5837,7 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
@@ -5816,6 +5889,7 @@
       null,
       null,
       0,
+      null,
       null,
       null,
       null,
@@ -5923,9 +5997,11 @@
       null,
       null,
       null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
@@ -6056,6 +6132,9 @@
       null,
       null,
       1,
+      null,
+      null,
+      null,
       null,
       null,
       null,
@@ -6079,11 +6158,90 @@
       null,
       null,
       null,
+      null
+    ],
+    [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
       null,
       null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
       null
     ],
     [
+      null,
       null,
       null,
       null,
