@@ -651,7 +651,7 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
     <h3>Willkommen bei Duel Ladder</h3>
     <div class="onboard-step"><span class="ob-ico" data-icon="swords"></span><div><b>Ergebnisse eintragen</b><div class="help" style="margin-top:2px">Klick auf eine Crosstable-Zelle (leer → ✓ → ✗) oder nutze den Tab „Ergebnis" mit Schnellsuche.</div></div></div>
     <div class="onboard-step"><span class="ob-ico" data-icon="keyboard"></span><div><b>Schnell navigieren</b><div class="help" style="margin-top:2px">Drücke <kbd>Strg</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd> für die Befehls- und Deck-Suche. <kbd>?</kbd> zeigt alle Tastenkürzel.</div></div></div>
-    <div class="onboard-step"><span class="ob-ico" data-icon="cloud-upload"></span><div><b>Geräteübergreifend speichern</b><div class="help" style="margin-top:2px">Im Menü (▾) anmelden — dann wird dein Stand automatisch zu GitHub gesichert und auf anderen Geräten geladen.</div></div></div>
+    <div class="onboard-step"><span class="ob-ico" data-icon="cloud-upload"></span><div><b>Geräteübergreifend speichern</b><div class="help" style="margin-top:2px">Der aktuelle Stand wird beim Öffnen automatisch von GitHub geladen. Zum <b>Speichern</b> musst du dich im Menü (▾) einmal anmelden — sonst bleiben deine Ergebnisse nur auf diesem Gerät.</div></div></div>
   </div>
   <div class="dlg-actions">
     <button class="btn gold" id="onboard-done" type="button">Los geht's</button>
@@ -697,7 +697,7 @@ table.cross thead th[data-col-j],table.cross tbody th[data-row-i]{cursor:pointer
     <p class="help"><b>Hosting:</b> Diese Seite läuft auf GitHub Pages (GitHub Inc.). Beim Aufruf werden technische Server-Logs (IP-Adresse, User-Agent, Zeitstempel) durch GitHub gespeichert. Details: <a href="https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener">GitHub Privacy Statement</a>.</p>
     <p class="help"><b>Drittanbieter:</b> Keine. Die Schriftart (Inter — SIL Open Font License), die SheetJS-Bibliothek und alle Skripte werden lokal vom selben Server ausgeliefert. Keine Verbindungen zu Google Fonts, CDNs, Analytics oder Tracking-Diensten.</p>
     <p class="help"><b>Cookies:</b> Keine. Die Seite verwendet ausschließlich <code>localStorage</code> deines Browsers, um deine Match-Eingaben offline zwischenzuspeichern und – falls du dich anmeldest – deine GitHub-Konfiguration plus Personal Access Token lokal abzulegen. Diese Daten verlassen dein Gerät nicht ohne deine Aktion.</p>
-    <p class="help"><b>GitHub-Sync:</b> Erst wenn du auf <em>Sync</em> oder <em>Speichern</em> klickst, wird eine Anfrage an <code>api.github.com</code> gesendet (Lese-/Schreibzugriff auf <code>data.json</code> im konfigurierten Repo). Dabei überträgt dein Browser deine IP an GitHub. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag/Funktionserbringung) bzw. lit. f (berechtigtes Interesse an Datenpersistenz).</p>
+    <p class="help"><b>GitHub-Sync:</b> Die Seite fragt beim Laden (und wenn der Tab wieder in den Vordergrund kommt, höchstens einmal pro Minute) den aktuellen Stand von <code>data.json</code> bei <code>api.github.com</code> ab, damit auf allen Geräten dieselben Ergebnisse stehen. <b>Geschrieben</b> wird nur, wenn du angemeldet bist und auf <em>Speichern</em> klickst bzw. das Auto-Speichern aktiv ist. Bei jeder dieser Anfragen überträgt dein Browser deine IP an GitHub; es werden keine personenbezogenen Daten von dir gesendet. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag/Funktionserbringung) bzw. lit. f (berechtigtes Interesse an Datenpersistenz).</p>
     <p class="help"><b>Speicherdauer / Löschen:</b> Lokale Daten kannst du jederzeit über die Browser-Einstellungen oder den <em>Lokal verwerfen</em>-Button löschen. Der Token wird per <em>Abmelden</em>-Button entfernt.</p>
     <p class="help"><b>Verantwortlich:</b> <span id="contact-area"><button class="btn ghost" id="reveal-contact" type="button" style="padding:4px 10px;font-size:11px">Kontakt anzeigen</button></span><noscript> Bitte über das GitHub-Profil des Repos kontaktieren.</noscript></p>
   </div>
@@ -802,9 +802,36 @@ function loadLocalState(){
 }
 function loadSeed(){ return JSON.parse(document.getElementById('seed').textContent); }
 
+/* Sync-Metadaten überleben den Reload — sonst gilt jeder lokal gespeicherte
+   Stand nach dem Neuladen als "ungespeichert" und der Auto-Pull greift nie. */
+const SYNC_META_KEY = 'ygo-sync-meta-v1';
+function loadSyncMeta(){
+  try {
+    const raw = localStorage.getItem(SYNC_META_KEY);
+    if(raw) return JSON.parse(raw) || {};
+  } catch(e){}
+  return {};
+}
+function saveSyncMeta(){
+  try {
+    localStorage.setItem(SYNC_META_KEY, JSON.stringify({
+      sha: remoteSha, snapshot: lastSyncedSnapshot, at: lastSyncedAt
+    }));
+  } catch(e){}
+}
+/* Nach erfolgreichem Pull/Push: Stand als synchron merken (inkl. Reload-Schutz) */
+function markSynced(snapshot, sha){
+  lastSyncedSnapshot = snapshot;
+  if(sha) remoteSha = sha;
+  lastSyncedAt = Date.now();
+  saveSyncMeta();
+}
+
+const syncMeta = loadSyncMeta();
+
 let state = loadLocalState() || loadSeed();
-let remoteSha = null;       // SHA from GitHub of the version we synced from
-let dirty = !!loadLocalState();  // local has unsynced changes
+let remoteSha = syncMeta.sha || null;   // SHA from GitHub of the version we synced from
+let dirty = !!loadLocalState();  // local has unsynced changes (refined below)
 
 /* ---------- Auto-save ---------- */
 const AUTOSAVE_KEY = 'ygo-autosave-v1';
@@ -813,9 +840,16 @@ let autoSaveEnabled = localStorage.getItem(AUTOSAVE_KEY) !== '0';  // default ON
 let autoSaveTimer = null;
 let autoSaveCountdownTimer = null;
 let autoSaveFiresAt = 0;
-let lastSyncedSnapshot = null;  // canonical (minified) JSON of last known synced state
+let lastSyncedSnapshot = syncMeta.snapshot || null;  // canonical (minified) JSON of last known synced state
 
 function currentSnapshot(){ return JSON.stringify(state); }
+
+/* Lokaler Stand entspricht exakt dem zuletzt synchronisierten → nicht dirty.
+   So bleibt ein Gerät, das nur gelesen hat, für den Auto-Pull offen. */
+if(dirty && lastSyncedSnapshot !== null && currentSnapshot() === lastSyncedSnapshot){
+  localStorage.removeItem(STORAGE_KEY);
+  dirty = false;
+}
 
 function setAutoSave(on){
   autoSaveEnabled = on;
@@ -859,6 +893,7 @@ function saveLocal(){
     localStorage.setItem(STORAGE_KEY, snap);
     dirty = true;
     scheduleAutoSave();
+    if(!getToken()) warnIfNotLoggedIn();
   }
   updateStatusUI();
 }
@@ -1074,7 +1109,7 @@ function renderStandings(){
   }[key]||((a,b)=>canonicalCompare(a,b));
   const rows=[...all].sort((a,b)=> (key==='rank'? cmp(a,b) : (mul*cmp(a,b)) || canonicalCompare(a,b)));
 
-  const visible=rows.filter(r=>!playedOnly||r.g>0).filter(r=>!search||r.name.toLowerCase().includes(search));
+  const visible=rows.filter(r=>!playedOnly||r.g>0).filter(r=>matchesFilter(r.name,search));
   const tbody=document.getElementById('standings-body');
   let html='';
   for(const r of visible){
@@ -1184,16 +1219,9 @@ function makeCombobox(input, list){
 
   function render(){
     const q = input.value.trim().toLowerCase();
-    filtered = state.decks.map((d,i)=>({name:d,i}))
-      .filter(o => !q || o.name.toLowerCase().includes(q))
-      .sort((a,b)=>{
-        if(q){
-          const aP = a.name.toLowerCase().startsWith(q);
-          const bP = b.name.toLowerCase().startsWith(q);
-          if(aP !== bP) return bP - aP;
-        }
-        return a.name.localeCompare(b.name);
-      })
+    filtered = state.decks.map((d,i)=>({name:d, i, s:matchScore(d, q)}))
+      .filter(o => o.s >= 0)
+      .sort((a,b)=> (b.s - a.s) || a.name.localeCompare(b.name))
       .slice(0, 60);
     if(highlighted >= filtered.length) highlighted = Math.max(0, filtered.length-1);
     if(filtered.length === 0){
@@ -1210,7 +1238,7 @@ function makeCombobox(input, list){
     const hl = list.querySelector('.combo-item.highlighted');
     if(hl) hl.scrollIntoView({block:'nearest'});
   }
-  function open(){ if(!opened){ opened = true; list.hidden = false; render(); } }
+  function open(){ opened = true; list.hidden = false; render(); }
   function close(){ opened = false; list.hidden = true; }
   function select(o){
     if(!o) return;
@@ -1228,17 +1256,18 @@ function makeCombobox(input, list){
     renderH2H();
   });
   input.addEventListener('blur', ()=>{
-    setTimeout(()=>{
-      // Try exact match on blur
-      const v = input.value.trim().toLowerCase();
-      const idx = state.decks.findIndex(d => d.toLowerCase() === v);
-      if(idx >= 0){
-        input.value = state.decks[idx];
-        input.dataset.deckIdx = idx;
-      }
-      close();
-      renderH2H();
-    }, 140);
+    // Resolve synchronously: a tap on a list item is handled on pointerdown,
+    // which always fires before this blur, so no timeout is needed here.
+    const v = input.value.trim().toLowerCase();
+    let idx = state.decks.findIndex(d => d.toLowerCase() === v);
+    // No exact hit, but the typed text narrows it down to a single deck → take it
+    if(idx < 0 && v && filtered.length === 1) idx = filtered[0].i;
+    if(idx >= 0){
+      input.value = state.decks[idx];
+      input.dataset.deckIdx = idx;
+    }
+    close();
+    renderH2H();
   });
   input.addEventListener('keydown', e=>{
     if(e.key === 'ArrowDown'){
@@ -1266,7 +1295,8 @@ function makeCombobox(input, list){
       if(opened){ e.preventDefault(); close(); }
     }
   });
-  list.addEventListener('mousedown', e=>{
+  // pointerdown covers mouse and touch, and fires before blur
+  list.addEventListener('pointerdown', e=>{
     const item = e.target.closest('.combo-item');
     if(!item) return;
     e.preventDefault();
@@ -1622,7 +1652,7 @@ function renderDeckMatchupsList(){
   const filter = (document.getElementById('deck-matchup-filter').value || '').toLowerCase();
   const items = state.decks.map((d,j)=>({d,j,v:state.matrix[i][j]}))
     .filter(x=>x.j!==i)
-    .filter(x=>!filter || x.d.toLowerCase().includes(filter))
+    .filter(x=>matchesFilter(x.d,filter))
     .sort((a,b)=>{
       const rank = v=>v===1?0:v===0?1:2;
       return rank(a.v)-rank(b.v) || a.d.localeCompare(b.d);
@@ -1735,7 +1765,7 @@ document.getElementById('add-deck-name').addEventListener('keydown',e=>{
 /* ---------- Status UI ---------- */
 let saving = false;
 let lastError = null;
-let lastSyncedAt = null;
+let lastSyncedAt = syncMeta.at || null;
 
 function getSyncState(){
   if(saving) return 'loading';
@@ -1921,9 +1951,8 @@ async function pullFromGitHub({silent}={}){
     const meta=await res.json();
     const txt=b64decode(meta.content);
     const data=JSON.parse(txt);
-    state=data; remoteSha=meta.sha; discardLocal();
-    lastSyncedSnapshot = currentSnapshot();
-    lastSyncedAt = Date.now();
+    state=data; discardLocal();
+    markSynced(currentSnapshot(), meta.sha);
     clearAutoSaveTimer();
     saving = false; updateStatusUI();
     renderAll();
@@ -1997,10 +2026,8 @@ async function pushToGitHub({silent}={}){
       throw new Error('HTTP '+res.status+': '+t.slice(0,200));
     }
     const j=await res.json();
-    remoteSha=j.content.sha;
-    lastSyncedSnapshot = pushedSnap;
     discardLocal();
-    lastSyncedAt = Date.now();
+    markSynced(pushedSnap, j.content.sha);
     saving=false;
     // If state changed during the push, mark dirty again and schedule
     if(currentSnapshot() !== lastSyncedSnapshot){
@@ -2014,6 +2041,60 @@ async function pushToGitHub({silent}={}){
     saving=false; lastError=err.message; updateStatusUI();
     showToast({label:'Speichern fehlgeschlagen: '+err.message, duration:4000});
   }
+}
+
+/* ---------- Auto-Pull: Stand anderer Geräte automatisch holen ----------
+   Läuft beim Start und wenn der Tab wieder sichtbar/online wird. Überschreibt
+   niemals ungespeicherte lokale Änderungen (dirty) und zeigt bei Offline/
+   Rate-Limit keinen Fehler-Status — dann bleibt einfach der lokale Stand stehen. */
+const AUTOPULL_MIN_GAP = 60000;   // frühestens 60 s nach dem letzten Abgleich
+let autoPullRunning = false;
+let lastAutoPullAt = 0;           // auch fehlgeschlagene Versuche bremsen (Rate-Limit)
+
+async function autoPull(){
+  if(autoPullRunning || saving) return;
+  if(!cfg.owner || !cfg.repo || !cfg.path) return;
+  if(dirty){
+    // Ungespeicherte Änderungen: nicht überschreiben, nur daran erinnern
+    warnIfNotLoggedIn();
+    return;
+  }
+  const now = Date.now();
+  if(now - lastAutoPullAt < AUTOPULL_MIN_GAP) return;
+  if(lastSyncedAt && now - lastSyncedAt < AUTOPULL_MIN_GAP) return;
+  lastAutoPullAt = now;
+  autoPullRunning = true;
+  const before = currentSnapshot();
+  try {
+    await pullFromGitHub({silent:true});
+    if(currentSnapshot() !== before){
+      showToast({label:'Neuer Stand von GitHub geladen ✓', duration:2500});
+    }
+  } catch(err){
+    lastError = null;          // offline/Rate-Limit ist kein Fehlerzustand
+    updateStatusUI();
+  } finally {
+    autoPullRunning = false;
+  }
+}
+
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible') autoPull();
+});
+window.addEventListener('online', autoPull);
+
+/* Einmaliger Hinweis, wenn ohne Token gearbeitet wird — sonst merkt man am
+   Handy nicht, dass die Ergebnisse nur lokal liegen. */
+let warnedNoToken = false;
+function warnIfNotLoggedIn(){
+  if(warnedNoToken || getToken()) return;
+  warnedNoToken = true;
+  showToast({
+    label:'Nicht angemeldet — Ergebnisse bleiben nur auf diesem Gerät.',
+    action:'Anmelden',
+    onAction:openLoginDialog,
+    duration:7000
+  });
 }
 
 /* ---------- Login ---------- */
@@ -2192,7 +2273,7 @@ function renderCrossMobile(){
 
   const items=state.decks.map((d,j)=>({d,j,v:state.matrix[i][j]}))
     .filter(x=>x.j!==i)
-    .filter(x=>!search || x.d.toLowerCase().includes(search))
+    .filter(x=>matchesFilter(x.d,search))
     .sort((a,b)=>{
       // played first (win, then loss), then unplayed; alpha within each group
       const rank=v=>v===1?0:v===0?1:2;
@@ -2293,11 +2374,14 @@ function buildPaletteCommands(){
 function renderPalette(query){
   const q = query.trim().toLowerCase();
   const cmds = buildPaletteCommands();
-  const cmdMatches = q ? cmds.filter(c=>c.label.toLowerCase().includes(q)) : cmds;
+  const cmdMatches = q
+    ? cmds.map(c=>({c, s:matchScore(c.label, q)})).filter(o=>o.s>=0)
+        .sort((a,b)=>b.s-a.s).map(o=>o.c)
+    : cmds;
   const deckMatches = state.decks.map((d,i)=>({label:d, i, kind:'deck', ico:'diamond',
-    action:()=>openDeckDetail(i)}))
-    .filter(d=>!q || d.label.toLowerCase().includes(q))
-    .sort((a,b)=>a.label.localeCompare(b.label));
+    s:matchScore(d, q), action:()=>openDeckDetail(i)}))
+    .filter(d=>d.s>=0)
+    .sort((a,b)=> (b.s - a.s) || a.label.localeCompare(b.label));
 
   paletteItems = [];
   let html = '';
@@ -2337,11 +2421,57 @@ function paletteItemHtml(it, idx, q){
     '<span class="lbl">'+lbl+'</span>'+kbd+'</div>';
 }
 
+/* ---------- Fuzzy search scoring (shared by combobox + palette) ----------
+   Returns a score (higher = better match) or -1 when the text does not match.
+   An empty query matches everything with score 0. Ranking:
+     exact > prefix > word-start > substring > subsequence ("zmb" → "Zombie") */
+function matchScore(text, q){
+  q = (q || '').trim().toLowerCase();
+  if(!q) return 0;
+  const t = String(text == null ? '' : text).toLowerCase();
+  if(t === q) return 1000;
+  const i = t.indexOf(q);
+  if(i === 0) return 800 - Math.min(t.length, 99);
+  if(i > 0){
+    const wordStart = /[\s\-\/&.,(+']/.test(t.charAt(i-1));
+    return (wordStart ? 600 : 400) - Math.min(i, 99);
+  }
+  // Subsequence: every query char must appear in order
+  let pos = 0, last = -1, streak = 0;
+  for(let qi=0; qi<q.length; qi++){
+    const found = t.indexOf(q.charAt(qi), pos);
+    if(found < 0) return -1;
+    if(found === last + 1) streak++;
+    last = found;
+    pos = found + 1;
+  }
+  return 200 + streak - Math.min(last, 99);
+}
+
+/* Plain list filters (Rangliste, Crosstable, Deck-Dialog): only substring or
+   better — a loose subsequence hit would show rows that look unrelated.
+   Typeahead pickers use matchScore directly, where ranking keeps noise at the bottom. */
+function matchesFilter(text, q){
+  if(!q || !q.trim()) return true;
+  return matchScore(text, q) >= 400;
+}
+
 function highlightQuery(text, q){
+  if(!q) return escapeHtml(text);
   const lower = text.toLowerCase();
   const i = lower.indexOf(q);
-  if(i < 0) return escapeHtml(text);
-  return escapeHtml(text.slice(0,i))+'<b>'+escapeHtml(text.slice(i,i+q.length))+'</b>'+escapeHtml(text.slice(i+q.length));
+  if(i >= 0){
+    return escapeHtml(text.slice(0,i))+'<b>'+escapeHtml(text.slice(i,i+q.length))+'</b>'+escapeHtml(text.slice(i+q.length));
+  }
+  // Subsequence highlight — bold each matched character
+  let out = '', pos = 0;
+  for(let qi=0; qi<q.length; qi++){
+    const found = lower.indexOf(q.charAt(qi), pos);
+    if(found < 0) return escapeHtml(text);
+    out += escapeHtml(text.slice(pos, found))+'<b>'+escapeHtml(text.charAt(found))+'</b>';
+    pos = found + 1;
+  }
+  return out + escapeHtml(text.slice(pos));
 }
 
 function highlightPaletteSelection(){
@@ -2558,6 +2688,7 @@ applyTheme();
 applyDensity();
 renderAll();
 maybeShowOnboarding();
+autoPull();
 // On startup, try to pull from GitHub if no local edits
 if(!dirty && cfg.owner && cfg.repo){
   pullFromGitHub({silent:true}).catch(()=>{});
